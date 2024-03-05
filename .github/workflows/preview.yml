@@ -1,0 +1,28 @@
+﻿name: Preview
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  artifactName: Website
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    concurrency:
+      cancel-in-progress: true
+      group: ${{ github.head_ref }}-build
+    steps:
+      - uses: actions/checkout@v4
+        name: Fetch repo
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Generate version
+        uses: gavanlamb/github-actions/.github/actions/generate-version@main
+        id: version

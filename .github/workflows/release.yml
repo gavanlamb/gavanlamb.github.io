@@ -1,0 +1,25 @@
+name: Release
+
+on:
+  create:
+    branches:
+      - release
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    concurrency:
+      cancel-in-progress: true
+      group: ${{ github.head_ref }}-build
+    steps:
+      - uses: actions/checkout@v4
+        name: Fetch repo
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Generate version
+        uses: gavanlamb/github-actions/generate-version@main
+        id: version
