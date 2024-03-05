@@ -21,3 +21,15 @@
    cd docs
    mkdocs serve
    ```
+
+## Versioning
+### Generate version
+1. Install dependencies
+   ```powershell
+   dotnet tool update -g nbgv
+   ```
+
+2. Generate version
+   ```powershell
+   ngbv cloud --all-vars
+   ```
