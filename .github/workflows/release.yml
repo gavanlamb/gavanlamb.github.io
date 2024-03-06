@@ -6,6 +6,15 @@ on:
       - release
   workflow_dispatch:
 
+permissions:
+  actions: write
+  contents: read
+  id-token: write
+  pages: write
+
+env:
+  artifactName: Website
+
 jobs:
   build:
     name: Build
@@ -39,8 +48,8 @@ jobs:
     environment: Production
     steps:
       - uses: actions/deploy-pages@v4
-        name: Deploy ${{ inputs.archiveName }} to GitHub Pages
+        name: Deploy ${{ env.artifactName }} to GitHub Pages
         with:
-          artifact_name: ${{ env.archiveName }}
+          artifact_name: ${{ env.artifactName }}
           token: ${{ secrets.GITHUB_TOKEN }}
   
