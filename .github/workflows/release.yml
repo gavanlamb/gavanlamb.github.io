@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
       - name: Generate version
-        uses: gavanlamb/github-actions/generate-version@main
+        uses: gavanlamb/github-actions/.github/actions/generate-version@main
         id: version
       - name: Build site
         uses: gavanlamb/github-actions/.github/actions/build-hugo@main
