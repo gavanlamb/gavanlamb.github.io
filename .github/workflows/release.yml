@@ -23,3 +23,10 @@ jobs:
       - name: Generate version
         uses: gavanlamb/github-actions/generate-version@main
         id: version
+      - name: Build site
+        uses: gavanlamb/github-actions/.github/actions/build-hugo@main
+        with:
+          archiveName: ${{ env.artifactName }}
+          destinationDirectory: site
+          sourceDirectory: docs
+  
