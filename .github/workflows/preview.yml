@@ -32,3 +32,22 @@ jobs:
           archiveName: ${{ env.artifactName }}
           destinationDirectory: site
           sourceDirectory: docs
+  Deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build
+    concurrency:
+      cancel-in-progress: true
+      group: ${{ github.head_ref }}-deploy
+    environment: Preview
+    steps:
+      - name: Deploy ${{ env.artifactName }}
+        uses: gavanlamb/github-actions/.github/actions/deploy-archive-to-s3@main
+        with:
+          archiveName: ${{ env.artifactName }}
+          archiveDirectory: site
+          awsAccessKeyId: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          awsSecretAccessKey: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          awsS3Bucket: ${{ vars.AWS_S3_CICD_BUCKET }}
+          awsS3Path: ${{ github.repository }}/${{ github.head_ref }}/site
+          awsS3Region: ${{ vars.AWS_DEFAULT_REGION }}
