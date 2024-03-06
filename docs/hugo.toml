@@ -1,6 +1,6 @@
-baseURL = 'https://example.org/'
+baseURL = 'https://www.gavanlamb.com'
 languageCode = 'en-us'
-title = 'My New Hugo Site'
+title = 'Gavan Lamb'
 
 [[module.imports]]
 path = "github.com/CaiJimmy/hugo-theme-stack/v3"
