@@ -15,21 +15,21 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       cancel-in-progress: true
-      group: ${{ github.head_ref }}-build
+      group: ${{ github.ref_name }}-deploy
     steps:
       - uses: actions/checkout@v4
         name: Fetch repo
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
           fetch-tags: true
       - name: Generate version
         uses: gavanlamb/github-actions/.github/actions/generate-version@main
         id: version
       - name: Build site
-        uses: gavanlamb/github-actions/.github/actions/build-hugo@main
+        uses: gavanlamb/github-actions/.github/actions/build-hugo-for-github-pages@main
         with:
-          archiveName: ${{ env.artifactName }}
+          artifactName: ${{ env.artifactName }}
           destinationDirectory: site
           sourceDirectory: docs
   Deploy:
@@ -38,16 +38,16 @@ jobs:
     needs: build
     concurrency:
       cancel-in-progress: true
-      group: ${{ github.head_ref }}-deploy
+      group: ${{ github.ref_name }}-deploy
     environment: Preview
     steps:
       - name: Deploy ${{ env.artifactName }}
-        uses: gavanlamb/github-actions/.github/actions/deploy-archive-to-s3@main
+        uses: gavanlamb/github-actions/.github/actions/deploy-artifact-to-s3@main
         with:
-          archiveName: ${{ env.artifactName }}
-          archiveDirectory: site
+          artifactName: ${{ env.artifactName }}
+          artifactDirectory: site
           awsAccessKeyId: ${{ secrets.AWS_ACCESS_KEY_ID }}
           awsSecretAccessKey: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           awsS3Bucket: ${{ vars.AWS_S3_CICD_BUCKET }}
-          awsS3Path: ${{ github.repository }}/${{ github.head_ref }}/site
+          awsS3Path: ${{ github.repository }}/${{ github.ref_name }}/site
           awsS3Region: ${{ vars.AWS_DEFAULT_REGION }}

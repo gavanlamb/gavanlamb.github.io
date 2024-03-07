@@ -21,21 +21,21 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       cancel-in-progress: true
-      group: ${{ github.head_ref }}-build
+      group: ${{ github.ref_name }}-build
     steps:
       - uses: actions/checkout@v4
         name: Fetch repo
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
           fetch-tags: true
       - name: Generate version
         uses: gavanlamb/github-actions/.github/actions/generate-version@main
         id: version
       - name: Build site
-        uses: gavanlamb/github-actions/.github/actions/build-hugo@main
+        uses: gavanlamb/github-actions/.github/actions/build-hugo-for-github-pages@main
         with:
-          archiveName: ${{ env.artifactName }}
+          artifactName: ${{ env.artifactName }}
           destinationDirectory: site
           sourceDirectory: docs
   Deploy:
@@ -44,7 +44,7 @@ jobs:
     needs: build
     concurrency:
       cancel-in-progress: true
-      group: ${{ github.head_ref }}-deploy
+      group: ${{ github.ref_name }}-deploy
     environment: Production
     steps:
       - uses: actions/deploy-pages@v4
@@ -52,4 +52,3 @@ jobs:
         with:
           artifact_name: ${{ env.artifactName }}
           token: ${{ secrets.GITHUB_TOKEN }}
-  
