@@ -15,15 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       cancel-in-progress: true
-      group: ${{ github.ref_name }}-deploy
+      group: ${{ github.ref }}-deploy
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo '${{ toJSON(github) }}'
       - uses: actions/checkout@v4
         name: Fetch repo
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ github.ref }}
           fetch-depth: 0
           fetch-tags: true
       - name: Generate version
@@ -41,7 +38,7 @@ jobs:
     needs: build
     concurrency:
       cancel-in-progress: true
-      group: ${{ github.ref_name }}-deploy
+      group: ${{ github.ref }}-deploy
     environment: Preview
     steps:
       - name: Deploy ${{ env.artifactName }}
@@ -52,5 +49,5 @@ jobs:
           awsAccessKeyId: ${{ secrets.AWS_ACCESS_KEY_ID }}
           awsSecretAccessKey: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           awsS3Bucket: ${{ vars.AWS_S3_CICD_BUCKET }}
-          awsS3Path: ${{ github.repository }}/${{ github.ref_name }}/site
+          awsS3Path: ${{ github.repository }}/${{ github.ref }}/site
           awsS3Region: ${{ vars.AWS_DEFAULT_REGION }}

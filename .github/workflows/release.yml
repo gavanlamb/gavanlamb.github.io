@@ -21,12 +21,12 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       cancel-in-progress: true
-      group: ${{ github.ref_name }}-build
+      group: ${{ github.ref }}-build
     steps:
       - uses: actions/checkout@v4
         name: Fetch repo
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ github.ref }}
           fetch-depth: 0
           fetch-tags: true
       - name: Generate version
@@ -44,7 +44,7 @@ jobs:
     needs: build
     concurrency:
       cancel-in-progress: true
-      group: ${{ github.ref_name }}-deploy
+      group: ${{ github.ref }}-deploy
     environment: Production
     steps:
       - uses: actions/deploy-pages@v4
