@@ -25,8 +25,8 @@
     "^refs/heads/main"
   ],
   "release" : {
-    "tagName" : "v{version}",
-    "branchName" : "v{version}",
+    "tagName" : "release/v{version}",
+    "branchName" : "release/v{version}",
     "versionIncrement" : "minor",
     "firstUnstableTag" : "alpha"
   }
