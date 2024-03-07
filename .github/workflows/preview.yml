@@ -17,6 +17,9 @@ jobs:
       cancel-in-progress: true
       group: ${{ github.ref_name }}-deploy
     steps:
+      - name: Dump GitHub context
+        id: github_context_step
+        run: echo '${{ toJSON(github) }}'
       - uses: actions/checkout@v4
         name: Fetch repo
         with:
