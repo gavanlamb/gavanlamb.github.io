@@ -2,9 +2,8 @@
 
 on:
   pull_request:
-    branches:
+    branches-ignore:
       - main
-  workflow_dispatch:
 
 env:
   artifactName: Website
@@ -32,8 +31,8 @@ jobs:
           artifactName: ${{ env.artifactName }}
           destinationDirectory: site
           sourceDirectory: docs
-  Deploy:
-    name: Deploy
+  Preview:
+    name: Preview
     runs-on: ubuntu-latest
     needs: build
     concurrency:
