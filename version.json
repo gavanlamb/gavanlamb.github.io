@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/main/src/NerdBank.GitVersioning/version.schema.json",
   "version": "1.0",
   "assemblyVersion": {
-    "precision": "revision"
+    "precision": "build"
   },
   "gitCommitIdShortFixedLength": 8,
   "gitCommitIdShortAutoMinimum": 0,
@@ -19,8 +19,7 @@
     "buildNumber": {
       "enabled": true,
       "includeCommitId": {
-        "when": "never",
-        "where": "buildMetadata"
+        "when": "never"
       }
     }
   },
