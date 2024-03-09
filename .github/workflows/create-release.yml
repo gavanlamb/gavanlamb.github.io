@@ -3,10 +3,9 @@ name: Create Release
 on:
   push:
     branches:
-      - main
+      - develop
     paths-ignore:
       - version.json
-  workflow_dispatch:
 
 permissions:
   contents: write
