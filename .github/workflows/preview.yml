@@ -29,6 +29,12 @@ jobs:
       - name: Install NBGV
         shell: bash
         run: dotnet tool update -g nbgv --version 3.6.133
+      - name: Version help
+        shell: bash
+        run: nbgv cloud --version --help
+      - name: Version help
+        shell: bash
+        run: nbgv cloud --metadata --help
       - name: Generate version
         shell: bash
         run: nbgv cloud --ci-system GitHubActions --all-vars
