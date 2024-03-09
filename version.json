@@ -11,8 +11,8 @@
     "precision": "revision"
   },
   "publicReleaseRefSpec": [
-    "^refs/heads/main$",
-    "^refs/heads/release/v\\d+\\.\\d+\\.\\d+"
+    "^refs/heads/develop$",
+    "^refs/heads/hotfix$"
   ],
   "cloudBuild": {
     "setAllVariables": true,
