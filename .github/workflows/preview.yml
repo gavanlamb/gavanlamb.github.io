@@ -2,8 +2,8 @@
 
 on:
   pull_request:
-    branches:
-      - develop
+    branches-ignore:
+      - main
   workflow_dispatch:
 
 env:
