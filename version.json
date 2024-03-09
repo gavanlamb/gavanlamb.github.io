@@ -7,7 +7,7 @@
   "gitCommitIdShortFixedLength": 8,
   "gitCommitIdShortAutoMinimum": 0,
   "nuGetPackageVersion": {
-    "semVer": 2.0,
+    "semVer": 1.0,
     "precision": "revision"
   },
   "publicReleaseRefSpec": [
@@ -19,10 +19,7 @@
     "setAllVariables": true,
     "setVersionVariables": true,
     "buildNumber": {
-      "enabled": true,
-      "includeCommitId": {
-        "when": "never"
-      }
+      "enabled": true
     }
   },
   "release": {
