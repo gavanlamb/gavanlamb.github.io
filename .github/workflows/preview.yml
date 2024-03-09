@@ -2,9 +2,8 @@
 
 on:
   pull_request:
-    branches:
-      - develop
-  workflow_dispatch:
+    branches-ignore:
+      - main
 
 env:
   artifactName: Website
