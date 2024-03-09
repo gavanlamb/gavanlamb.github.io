@@ -7,8 +7,7 @@
   "gitCommitIdShortFixedLength": 8,
   "gitCommitIdShortAutoMinimum": 0,
   "nuGetPackageVersion": {
-    "semVer": 2.0,
-    "precision": "build"
+    "semVer": 2.0
   },
   "publicReleaseRefSpec": [
     "^refs/heads/main$",
