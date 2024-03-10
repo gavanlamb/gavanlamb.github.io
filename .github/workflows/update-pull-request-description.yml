@@ -18,23 +18,23 @@ jobs:
         uses: kaskar2008/action-pr-description-replace@v1.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          find: '%{{GITHUB_REPOSITORY}}%'
+          find: '%GITHUB_REPOSITORY%'
           replace: ${{ github.head_ref }}
       - name: Replace ref name
         uses: kaskar2008/action-pr-description-replace@v1.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          find: '%{{GITHUB_REF}}%'
+          find: '%GITHUB_REF%'
           replace: ${{ github.ref }}
       - name: Replace ticket number
         uses: kaskar2008/action-pr-description-replace@v1.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          find: '%{{TICKET_NUMBER}}%'
+          find: '%TICKET_NUMBER%'
           replace: '#10'
       - name: Replace ticket title
         uses: kaskar2008/action-pr-description-replace@v1.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          find: '%{{TICKET_TITLE}}%'
+          find: '%TICKET_TITLE%'
           replace: 'Ticket title'
