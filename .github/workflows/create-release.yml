@@ -7,11 +7,6 @@ on:
 #    paths-ignore:
 #      - version.json
   workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch to create release from'
-        required: true
-        default: 'develop'
 
 permissions:
   contents: write
