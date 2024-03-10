@@ -9,32 +9,42 @@ jobs:
   replace-repository-name:
     name: Replace repository name
     runs-on: ubuntu-latest
-    steps:
+    steps:        
       - uses: actions/checkout@v2
         name: Checkout ${{ github.ref }}
         with:
           ref: ${{ github.ref }}
-      - name: Replace repository name
-        uses: kaskar2008/action-pr-description-replace@v1.0.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          find: '%GITHUB_REPOSITORY%'
-          replace: ${{ github.head_ref }}
-      - name: Replace ref name
-        uses: kaskar2008/action-pr-description-replace@v1.0.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          find: '%GITHUB_REF%'
-          replace: ${{ github.ref }}
-      - name: Replace ticket number
-        uses: kaskar2008/action-pr-description-replace@v1.0.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          find: '%TICKET_NUMBER%'
-          replace: '#10'
-      - name: Replace ticket title
-        uses: kaskar2008/action-pr-description-replace@v1.0.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          find: '%TICKET_TITLE%'
-          replace: 'Ticket title'
+      - name: Get PR#${{ github.event.pull_request.number }} description
+        id: get_pr_description
+        shell: bash
+        run: |
+          pr_description_template=$(gh pr view ${{ github.event.pull_request.number }} --json body --jq '.body')
+          echo "pr-description-template<<EOF" >> $GITHUB_OUTPUT
+          echo "$pr_description_template" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Replace PR#${{ github.event.pull_request.number }} description variables
+        id: update_pr_description
+        shell: bash
+        run: |
+          ticket_number="XXXX-XXXX"
+          ticket_title="Sample title"
+          github_repository="${{ github.repository }}"
+          github_ref="${{ github.ref }}"
+          pr_description=${{ steps.get_pr_description.outputs.pr-description-template }}
+          
+          pr_description=$(sed -e "s|{{TICKET_NUMBER}}|$ticket_number|g" \
+          -e "s|{{TICKET_TITLE}}|$ticket_title|g" \
+          -e "s|{{GITHUB_REPOSITORY}}|$github_repository|g" \
+          -e "s|{{GITHUB_REF}}|$github_ref|g" $pr_description)
+          
+          echo "pr-description<<EOF" >> $GITHUB_OUTPUT
+          echo "$pr_description" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Update PR#${{ github.event.pull_request.number }} description
+        shell: bash
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --body ${{ steps.update_pr_description.outputs.pr-description }}
+        env:
+          GH_TOKEN: ${{ github.token }}
