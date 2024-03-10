@@ -14,27 +14,27 @@ jobs:
         name: Checkout ${{ github.ref }}
         with:
           ref: ${{ github.ref }}
-      - name: Replace repository name
+      - name: Replace {{GITHUB_REPOSITORY}} with ${{ github.head_ref }}
         uses: kaskar2008/action-pr-description-replace@v1.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          find: '%GITHUB_REPOSITORY%'
+          find: '{{GITHUB_REPOSITORY}}'
           replace: ${{ github.head_ref }}
-      - name: Replace ref name
+      - name: Replace {{GITHUB_REF}} with ${{ github.ref }}
         uses: kaskar2008/action-pr-description-replace@v1.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          find: '%GITHUB_REF%'
+          find: '{{GITHUB_REF}}'
           replace: ${{ github.ref }}
-      - name: Replace ticket number
+      - name: Replace {{TICKET_NUMBER}} with #10
         uses: kaskar2008/action-pr-description-replace@v1.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          find: '%TICKET_NUMBER%'
+          find: '{{TICKET_NUMBER}}'
           replace: '#10'
-      - name: Replace ticket title
+      - name: Replace {{TICKET_TITLE}} with Ticket title
         uses: kaskar2008/action-pr-description-replace@v1.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          find: '%TICKET_TITLE%'
+          find: '{{TICKET_TITLE}}'
           replace: 'Ticket title'
