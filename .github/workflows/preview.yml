@@ -33,8 +33,13 @@ jobs:
         uses: gavanlamb/github-actions/.github/actions/build-hugo-for-github-pages@main
         with:
           artifactName: ${{ env.artifactName }}
+          commitBy: ${{ github.actor }}
+          commitDate: ${{ steps.version.outputs.GitCommitDate }}
+          commitId: ${{ steps.version.outputs.GitCommitId }}
           destinationDirectory: site
           sourceDirectory: docs
+          semver: ${{ steps.version.outputs.SemVer2 }}
+          version: ${{ steps.version.outputs.Version }}
   Preview:
     name: Preview
     runs-on: ubuntu-latest
