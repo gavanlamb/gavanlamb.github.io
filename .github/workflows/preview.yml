@@ -38,7 +38,7 @@ jobs:
           commitId: ${{ steps.version.outputs.GitCommitId }}
           destinationDirectory: site
           sourceDirectory: docs
-          semver: ${{ steps.version.outputs.SemVer2 }}
+          semanticVersion: ${{ steps.version.outputs.SemVer2 }}
           version: ${{ steps.version.outputs.Version }}
   Preview:
     name: Preview
