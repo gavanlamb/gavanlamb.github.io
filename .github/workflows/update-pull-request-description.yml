@@ -5,15 +5,13 @@ on:
     types:
       - opened
 
-
-
 jobs:
-  replace-description:
-    name: Replace description
+  replace-repository-name:
+    name: Replace repository name
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        name: Checkout ${{ github.ref }} 
+        name: Checkout ${{ github.ref }}
         with:
           ref: ${{ github.ref }}
       - name: Replace repository name
@@ -22,11 +20,30 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           find: '{{GITHUB_REPOSITORY}}'
           replace: ${{ github.head_ref }}
+  replace-reference:
+    name: Replace reference
+    needs: replace-repository-name
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout ${{ github.ref }}
+        with:
+          ref: ${{ github.ref }}
       - name: Replace ref name
         uses: kaskar2008/action-pr-description-replace@v1.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           find: '{{GITHUB_REF}}'
+          replace: ${{ github.ref }}
+  replace-ticket-number:
+    name: Replace ticket number
+    needs: replace-repository-name
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout ${{ github.ref }}
+        with:
+          ref: ${{ github.ref }}
           replace: ${{ github.ref }}
       - name: Replace ticket number
         uses: kaskar2008/action-pr-description-replace@v1.0.0
@@ -34,6 +51,16 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           find: '{{TICKET_NUMBER}}'
           replace: '#10'
+  replace-ticket-title:
+    name: Replace ticket title
+    needs: replace-ticket-number
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout ${{ github.ref }}
+        with:
+          ref: ${{ github.ref }}
+          replace: ${{ github.ref }}
       - name: Replace ticket title
         uses: kaskar2008/action-pr-description-replace@v1.0.0
         with:
