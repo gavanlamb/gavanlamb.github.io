@@ -1,11 +1,17 @@
 name: Create Release
 
 on:
-  push:
-    branches:
-      - develop
-    paths-ignore:
-      - version.json
+#  push:
+#    branches:
+#      - develop
+#    paths-ignore:
+#      - version.json
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to create release from'
+        required: true
+        default: 'develop'
 
 permissions:
   contents: write
