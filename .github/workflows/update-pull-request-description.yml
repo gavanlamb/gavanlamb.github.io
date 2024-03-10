@@ -7,8 +7,13 @@ on:
 
 jobs:
   replace-description:
+    name: Replace description
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+        name: Checkout ${{ github.ref }} 
+        with:
+          ref: ${{ github.ref }}
       - name: Replace repository name
         uses: kaskar2008/action-pr-description-replace@v1.0.0
         with:
