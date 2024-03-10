@@ -22,9 +22,51 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
           fetch-tags: true
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.x.x
+      - name: Install NBGV
+        shell: bash
+        run: dotnet tool update -g nbgv --version 3.6.133
       - name: Generate version
-        uses: gavanlamb/github-actions/.github/actions/generate-version@main
+        shell: bash
+        run: nbgv cloud --ci-system GitHubActions --all-vars
+      - name: Output versions
+        shell: bash
         id: version
+        run: |
+          echo "AssemblyFileVersion=$NBGV_AssemblyFileVersion" >> $GITHUB_OUTPUT
+          echo "AssemblyInformationalVersion=$NBGV_AssemblyInformationalVersion" >> $GITHUB_OUTPUT
+          echo "AssemblyVersion=$NBGV_AssemblyVersion" >> $GITHUB_OUTPUT
+          echo "BuildMetadataFragment=$NBGV_BuildMetadataFragment" >> $GITHUB_OUTPUT
+          echo "BuildNumber=$NBGV_BuildNumber" >> $GITHUB_OUTPUT
+          echo "BuildingRef=$NBGV_BuildingRef" >> $GITHUB_OUTPUT
+          echo "CloudBuildNumber=$NBGV_CloudBuildNumber" >> $GITHUB_OUTPUT
+          echo "ChocolateyPackageVersion=$NBGV_ChocolateyPackageVersion" >> $GITHUB_OUTPUT
+          echo "GitCommitId=$NBGV_GitCommitId" >> $GITHUB_OUTPUT
+          echo "GitCommitIdShort=$NBGV_GitCommitIdShort" >> $GITHUB_OUTPUT
+          echo "GitCommitDate=$NBGV_GitCommitDate" >> $GITHUB_OUTPUT
+          echo "MajorMinorVersion=$NBGV_MajorMinorVersion" >> $GITHUB_OUTPUT
+          echo "NpmPackageVersion=$NBGV_NpmPackageVersion" >> $GITHUB_OUTPUT
+          echo "NuGetPackageVersion=$NBGV_NuGetPackageVersion" >> $GITHUB_OUTPUT
+          echo "PrereleaseVersion=$NBGV_PrereleaseVersion" >> $GITHUB_OUTPUT
+          echo "PrereleaseVersionNoLeadingHyphen=$NBGV_PrereleaseVersionNoLeadingHyphen" >> $GITHUB_OUTPUT
+          echo "PublicRelease=$NBGV_PublicRelease" >> $GITHUB_OUTPUT
+          echo "SemVer1=$NBGV_SemVer1" >> $GITHUB_OUTPUT
+          echo "SemVer1NumericIdentifierPadding=$NBGV_SemVer1NumericIdentifierPadding" >> $GITHUB_OUTPUT
+          echo "SemVer2=$NBGV_SemVer2" >> $GITHUB_OUTPUT
+          echo "SimpleVersion=$NBGV_SimpleVersion" >> $GITHUB_OUTPUT
+          echo "Version=$NBGV_Version" >> $GITHUB_OUTPUT
+          echo "VersionFileFound=$NBGV_VersionFileFound" >> $GITHUB_OUTPUT
+          echo "VersionHeight=$NBGV_VersionHeight" >> $GITHUB_OUTPUT
+          echo "VersionHeightOffset=$NBGV_VersionHeightOffset" >> $GITHUB_OUTPUT
+          echo "VersionMajor=$NBGV_VersionMajor" >> $GITHUB_OUTPUT
+          echo "VersionMinor=$NBGV_VersionMinor" >> $GITHUB_OUTPUT
+          echo "VersionRevision=$NBGV_VersionRevision" >> $GITHUB_OUTPUT
+#      - name: Generate version
+#        uses: gavanlamb/github-actions/.github/actions/generate-version@main
+#        id: version
       - name: Build site
         uses: gavanlamb/github-actions/.github/actions/build-hugo-for-github-pages@main
         with:
