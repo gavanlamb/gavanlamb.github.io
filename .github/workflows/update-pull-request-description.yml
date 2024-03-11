@@ -5,15 +5,19 @@ on:
     types:
       - opened
 
+concurrency:
+  cancel-in-progress: false
+  group: update-pull-request-description-${{ github.ref_name }}
+
 jobs:
   update-pr-description:
     name: Update PR description
     runs-on: ubuntu-latest
     steps:        
       - uses: actions/checkout@v2
-        name: Checkout ${{ github.ref }}
+        name: Checkout ${{ github.ref_name }}
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.ref_name }}
       - name: Get PR#${{ github.event.pull_request.number }} description
         id: get_pr_description
         shell: bash
@@ -31,13 +35,13 @@ jobs:
           ticket_number="XXXX-XXXX"
           ticket_title="Sample title"
           github_repository="${{ github.repository }}"
-          github_ref="${{ github.ref }}"
+          github_ref_name="${{ github.ref_name }}"
           pr_description="${{ steps.get_pr_description.outputs.pr-description-template }}"
           
           pr_description=$(sed -e "s|{{TICKET_NUMBER}}|$ticket_number|g" \
           -e "s|{{TICKET_TITLE}}|$ticket_title|g" \
           -e "s|{{GITHUB_REPOSITORY}}|$github_repository|g" \
-          -e "s|{{GITHUB_REF}}|$github_ref|g" <<< $pr_description)
+          -e "s|{{GITHUB_REF_NAME}}|$github_ref_name|g" <<< $pr_description)
           
           echo "pr-description<<EOF" >> $GITHUB_OUTPUT
           echo "$pr_description" >> $GITHUB_OUTPUT

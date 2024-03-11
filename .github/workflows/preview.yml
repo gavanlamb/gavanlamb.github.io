@@ -8,18 +8,19 @@ on:
 env:
   artifactName: Website
 
+concurrency:
+  cancel-in-progress: false
+  group: preview-${{ github.ref_name }}
+
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    concurrency:
-      cancel-in-progress: true
-      group: ${{ github.ref }}-deploy
     steps:
       - uses: actions/checkout@v4
         name: Fetch repo
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
           fetch-tags: true
       - name: Setup dotnet
@@ -44,9 +45,6 @@ jobs:
     name: Preview
     runs-on: ubuntu-latest
     needs: build
-    concurrency:
-      cancel-in-progress: true
-      group: ${{ github.ref }}-deploy
     environment: Preview
     steps:
       - name: Deploy ${{ env.artifactName }}
@@ -57,5 +55,5 @@ jobs:
           awsAccessKeyId: ${{ secrets.AWS_ACCESS_KEY_ID }}
           awsSecretAccessKey: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           awsS3Bucket: ${{ vars.AWS_S3_CICD_BUCKET }}
-          awsS3Path: ${{ github.repository }}/${{ github.ref }}/site
+          awsS3Path: ${{ github.repository }}/${{ github.ref_name }}/site
           awsS3Region: ${{ vars.AWS_DEFAULT_REGION }}

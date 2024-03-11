@@ -12,18 +12,19 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  cancel-in-progress: false
+  group: create-release-${{ github.ref_name }}
+
 jobs:
   create_release_branch:
     name: Create release branch
     runs-on: ubuntu-latest
-    concurrency:
-      cancel-in-progress: true
-      group: ${{ github.ref }}-build
     steps:
       - uses: actions/checkout@v4
         name: Fetch repo
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
           fetch-tags: true
       - name: Setup dotnet
