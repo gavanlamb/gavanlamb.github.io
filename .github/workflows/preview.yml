@@ -17,9 +17,6 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Output GitHub context
-        shell: bash
-        run: echo ${{ toJson(github) }}
       - uses: actions/checkout@v4
         name: Fetch repo
         with:
