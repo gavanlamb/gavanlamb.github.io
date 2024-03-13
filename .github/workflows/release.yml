@@ -26,10 +26,10 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
       - name: Generate version
-        uses: gavanlamb/github-actions/.github/actions/generate-version@main
+        uses: gavanlamb/github-actions/.github/actions/version/generate@main
         id: version
       - name: Build site
-        uses: gavanlamb/github-actions/.github/actions/build-hugo-for-github-pages@main
+        uses: gavanlamb/github-actions/.github/actions/hugo/build@main
         with:
           artifactName: ${{ env.artifactName }}
           destinationDirectory: site
