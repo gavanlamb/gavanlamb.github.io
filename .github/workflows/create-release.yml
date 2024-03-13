@@ -14,7 +14,7 @@ permissions:
 
 concurrency:
   cancel-in-progress: false
-  group: create-release-${{ github.ref_name }}
+  group: create-release-${{ github.head_ref }}
 
 jobs:
   create_release_branch:
@@ -22,9 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        name: Fetch repo
+        name: Checkout
         with:
-          ref: ${{ github.ref_name }}
           fetch-depth: 0
           fetch-tags: true
       - uses: gavanlamb/github-actions/.github/actions/version/create-release@main

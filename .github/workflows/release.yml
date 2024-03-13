@@ -13,7 +13,7 @@ env:
 
 concurrency:
   cancel-in-progress: false
-  group: release-${{ github.ref_name }}
+  group: release-${{ github.head_ref }}
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        name: Fetch repo
+        name: Checkout
         with:
           fetch-depth: 0
           fetch-tags: true

@@ -10,7 +10,7 @@ env:
 
 concurrency:
   cancel-in-progress: false
-  group: preview-${{ github.ref_name }}
+  group: preview-${{ github.head_ref }}
 
 jobs:
   build:
@@ -18,9 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        name: Fetch repo
+        name: Checkout
         with:
-          ref: ${{ github.ref_name }}
           fetch-depth: 0
           fetch-tags: true
       - name: Setup dotnet
@@ -55,5 +54,5 @@ jobs:
           awsAccessKeyId: ${{ secrets.AWS_ACCESS_KEY_ID }}
           awsSecretAccessKey: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           awsS3Bucket: ${{ vars.AWS_S3_CICD_BUCKET }}
-          awsS3Path: ${{ github.repository }}/${{ github.ref_name }}/site
+          awsS3Path: ${{ github.repository }}/${{ github.head_ref }}/site
           awsS3Region: ${{ vars.AWS_DEFAULT_REGION }}

@@ -7,7 +7,7 @@ on:
 
 concurrency:
   cancel-in-progress: false
-  group: update-pull-request-description-${{ github.ref_name }}
+  group: update-pull-request-description-${{ github.head_ref }}
 
 jobs:
   update-pr-description:
@@ -15,9 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:        
       - uses: actions/checkout@v2
-        name: Checkout ${{ github.ref_name }}
-        with:
-          ref: ${{ github.ref_name }}
+        name: Checkout
       - name: Get PR#${{ github.event.pull_request.number }} description
         id: get_pr_description
         shell: bash
