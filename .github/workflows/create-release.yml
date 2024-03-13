@@ -27,38 +27,10 @@ jobs:
           ref: ${{ github.ref_name }}
           fetch-depth: 0
           fetch-tags: true
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
+      - uses: gavanlamb/github-actions/.github/actions/version/create-release@main
+        name: Create release
+        id: create-release
         with:
-          dotnet-version: 8.x.x
-      - name: Install NBGV
-        shell: bash
-        run: dotnet tool update -g nbgv --version 3.6.133
-      - name: Setup git user
-        run: |
-          git config user.name '${{ github.actor }}'
-          git config user.email '${{ github.actor }}@users.noreply.github.com'
-          git remote set-url origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-      - name: Prepare Release
-        id: prepare-release
-        shell: bash
-        run: |
-          version=$(nbgv prepare-release --format json | jq -c .)
-          echo $version
-          current_branch=$(jq -r '.CurrentBranch.Name' <<< "$version")
-          echo "current-branch=$current_branch" >> $GITHUB_OUTPUT
-          new_branch=$(jq -r '.NewBranch.Name' <<< "$version")
-          echo "new-branch=$new_branch" >> $GITHUB_OUTPUT
-      - name: Push ${{ steps.prepare-release.outputs.current-branch }}
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.prepare-release.outputs.current-branch }}
-          tags: true
-      - name: Push ${{ steps.prepare-release.outputs.new-branch }}
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.prepare-release.outputs.new-branch }}
-          tags: true
-          force: true
+          githubActor: ${{ github.actor }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          repositoryName: ${{ github.repository }}
