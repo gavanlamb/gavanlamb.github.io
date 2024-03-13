@@ -22,10 +22,6 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.x.x
       - name: Generate version
         uses: gavanlamb/github-actions/.github/actions/version/generate@main
         id: version
@@ -40,6 +36,19 @@ jobs:
           sourceDirectory: docs
           semanticVersion: ${{ steps.version.outputs.SemVer2 }}
           version: ${{ steps.version.outputs.Version }}
+      - name: Send message
+        uses: gavanlamb/github-actions/.github/actions/slack/build@main
+        if: always()
+        with:
+          slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
+          repositoryName: ${{ github.repository }}
+          version: ${{ steps.version.outputs.Version }}
+          status: ${{ job.status }}
+          jobName: ${{ github.job }}
+          branchName: ${{ github.head_ref }}
+          pipelineUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          includeIntegrationTests: 'false'
+          includeUnitTests: 'false'
   Preview:
     name: Preview
     runs-on: ubuntu-latest
