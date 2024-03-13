@@ -41,7 +41,7 @@ jobs:
           slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
           repositoryName: ${{ github.repository }}
           version: ${{ steps.version.outputs.Version }}
-          isBuildSuccess: success()
+          status: ${{ job.status }}
           jobName: ${{ github.job }}
           branchName: ${{ github.head_ref }}
           pipelineUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
