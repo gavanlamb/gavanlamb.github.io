@@ -22,9 +22,9 @@ jobs:
         id: get_pr_description
         shell: bash
         run: |
-          pr_description_template=$(gh pr view ${{ github.event.pull_request.number }} --json body --jq '.body')
+          PR_DESCRIPTION_TEMPLATE=$(gh pr view ${{ github.event.pull_request.number }} --json body --jq '.body')
           echo "pr-description-template<<EOF" >> $GITHUB_OUTPUT
-          echo "$pr_description_template" >> $GITHUB_OUTPUT
+          echo "$PR_DESCRIPTION_TEMPLATE" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ github.token }}
@@ -32,19 +32,19 @@ jobs:
         id: update_pr_description
         shell: bash
         run: |
-          ticket_number="XXXX-XXXX"
-          ticket_title="Sample title"
-          github_repository="${{ github.repository }}"
-          github_ref_name="${{ github.ref_name }}"
-          pr_description="${{ steps.get_pr_description.outputs.pr-description-template }}"
+          TICKET_NUMBER="XXXX-XXXX"
+          TICKET_TITLE="Sample title"
+          REPOSITORY_NAME="${{ github.repository }}"
+          BRANCH_NAME="${{ github.head_ref }}"
+          PR_DESCRIPTION="${{ steps.get_pr_description.outputs.pr-description-template }}"
           
-          pr_description=$(sed -e "s|{{TICKET_NUMBER}}|$ticket_number|g" \
-          -e "s|{{TICKET_TITLE}}|$ticket_title|g" \
-          -e "s|{{GITHUB_REPOSITORY}}|$github_repository|g" \
-          -e "s|{{GITHUB_REF_NAME}}|$github_ref_name|g" <<< $pr_description)
+          pr_description=$(sed -e "s|{{TICKET_NUMBER}}|$TICKET_NUMBER|g" \
+          -e "s|{{TICKET_TITLE}}|$TICKET_TITLE|g" \
+          -e "s|{{REPOSITORY_NAME}}|$REPOSITORY_NAME|g" \
+          -e "s|{{BRANCH_NAME}}|$BRANCH_NAME|g" <<< $PR_DESCRIPTION)
           
           echo "pr-description<<EOF" >> $GITHUB_OUTPUT
-          echo "$pr_description" >> $GITHUB_OUTPUT
+          echo "$PR_DESCRIPTION" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
       - name: Update PR#${{ github.event.pull_request.number }} description
         shell: bash
