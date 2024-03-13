@@ -31,10 +31,10 @@ jobs:
         with:
           dotnet-version: 8.x.x
       - name: Generate version
-        uses: gavanlamb/github-actions/.github/actions/generate-version@main
+        uses: gavanlamb/github-actions/.github/actions/version/generate@main
         id: version
       - name: Build site
-        uses: gavanlamb/github-actions/.github/actions/build-hugo-for-github-pages@main
+        uses: gavanlamb/github-actions/.github/actions/hugo/build@main
         with:
           artifactName: ${{ env.artifactName }}
           commitBy: ${{ github.actor }}
@@ -51,7 +51,7 @@ jobs:
     environment: Preview
     steps:
       - name: Deploy ${{ env.artifactName }}
-        uses: gavanlamb/github-actions/.github/actions/deploy-artifact-to-s3@main
+        uses: gavanlamb/github-actions/.github/actions/hugo/deploy-to-s3@main
         with:
           artifactName: ${{ env.artifactName }}
           artifactDirectory: site
