@@ -1,6 +1,6 @@
 name: Release
 
-run-name: Release:${{ github.ref }}
+run-name: Release:${{ github.ref_name }}
 
 on:
   push:
@@ -11,36 +11,46 @@ on:
 env:
   artifactName: Website
 
+concurrency:
+  cancel-in-progress: false
+  group: release-${{ github.head_ref }}
+
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    concurrency:
-      cancel-in-progress: true
-      group: ${{ github.ref }}-build
     steps:
       - uses: actions/checkout@v4
-        name: Fetch repo
+        name: Checkout
         with:
-          ref: ${{ github.ref }}
           fetch-depth: 0
           fetch-tags: true
       - name: Generate version
-        uses: gavanlamb/github-actions/.github/actions/generate-version@main
+        uses: gavanlamb/github-actions/.github/actions/version/generate@main
         id: version
       - name: Build site
-        uses: gavanlamb/github-actions/.github/actions/build-hugo-for-github-pages@main
+        uses: gavanlamb/github-actions/.github/actions/hugo/build@main
         with:
           artifactName: ${{ env.artifactName }}
           destinationDirectory: site
           sourceDirectory: docs
+      - name: Send message
+        uses: gavanlamb/github-actions/.github/actions/slack/build@main
+        if: always()
+        with:
+          slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
+          repositoryName: ${{ github.repository }}
+          version: ${{ steps.version.outputs.Version }}
+          status: ${{ job.status }}
+          jobName: ${{ github.job }}
+          branchName: ${{ github.head_ref }}
+          pipelineUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          includeIntegrationTests: 'false'
+          includeUnitTests: 'false'
   Production:
     name: Production
     runs-on: ubuntu-latest
     needs: build
-    concurrency:
-      cancel-in-progress: true
-      group: ${{ github.ref }}-deploy
     environment: Production
     steps:
       - uses: actions/deploy-pages@v4
