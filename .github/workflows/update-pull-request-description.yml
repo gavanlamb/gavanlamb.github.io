@@ -36,7 +36,7 @@ jobs:
           BRANCH_NAME="${{ github.head_ref }}"
           PR_DESCRIPTION="${{ steps.get_pr_description.outputs.pr-description-template }}"
           
-          pr_description=$(sed -e "s|{{TICKET_NUMBER}}|$TICKET_NUMBER|g" \
+          PR_DESCRIPTION=$(sed -e "s|{{TICKET_NUMBER}}|$TICKET_NUMBER|g" \
           -e "s|{{TICKET_TITLE}}|$TICKET_TITLE|g" \
           -e "s|{{REPOSITORY_NAME}}|$REPOSITORY_NAME|g" \
           -e "s|{{BRANCH_NAME}}|$BRANCH_NAME|g" <<< $PR_DESCRIPTION)
