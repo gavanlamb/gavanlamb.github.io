@@ -59,5 +59,6 @@ jobs:
           pullRequestNumber: ${{ github.event.pull_request.number }}
           pullRequestTitle: ${{ github.event.pull_request.title }}
           pullRequestRaisee: ${{ github.event.pull_request.user.login }}
+          repositoryName: ${{ github.repository }}
           sourceBranch: ${{ github.head_ref }}
           destinationBranch: ${{ github.base_ref }}
