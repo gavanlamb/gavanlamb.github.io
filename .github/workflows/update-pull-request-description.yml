@@ -50,3 +50,14 @@ jobs:
           gh pr edit ${{ github.event.pull_request.number }} --body "${{ steps.update_pr_description.outputs.pr-description }}"
         env:
           GH_TOKEN: ${{ github.token }}
+      - name: Send message
+        uses: gavanlamb/github-actions/.github/actions/slack/create-pull-request@main
+        if: always()
+        with:
+          slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
+          pullRequestUrl: ${{ github.event.pull_request.html_url }}
+          pullRequestNumber: ${{ github.event.pull_request.number }}
+          pullRequestTitle: ${{ github.event.pull_request.title }}
+          pullRequestRaisee: ${{ github.event.pull_request.user.login }}
+          sourceBranch: ${{ github.head_ref }}
+          destinationBranch: ${{ github.base_ref }}
