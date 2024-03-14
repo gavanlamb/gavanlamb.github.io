@@ -51,7 +51,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Send message
-        uses: gavanlamb/github-actions/.github/actions/slack/create-pull-request@main
+        uses: gavanlamb/github-actions/.github/actions/slack/pull-request-created@main
         if: always()
         with:
           slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}

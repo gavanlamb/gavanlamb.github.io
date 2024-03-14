@@ -35,7 +35,7 @@ jobs:
           destinationDirectory: site
           sourceDirectory: docs
       - name: Send message
-        uses: gavanlamb/github-actions/.github/actions/slack/build@main
+        uses: gavanlamb/github-actions/.github/actions/slack/built@main
         if: always()
         with:
           slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -37,7 +37,7 @@ jobs:
           semanticVersion: ${{ steps.version.outputs.SemVer2 }}
           version: ${{ steps.version.outputs.Version }}
       - name: Send message
-        uses: gavanlamb/github-actions/.github/actions/slack/build@main
+        uses: gavanlamb/github-actions/.github/actions/slack/built@main
         if: always()
         with:
           slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
