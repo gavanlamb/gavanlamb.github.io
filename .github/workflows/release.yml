@@ -39,12 +39,8 @@ jobs:
         if: always()
         with:
           slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
-          repositoryName: ${{ github.repository }}
           version: ${{ steps.version.outputs.Version }}
           status: ${{ job.status }}
-          jobName: ${{ github.job }}
-          branchName: ${{ github.head_ref }}
-          pipelineUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           includeIntegrationTests: 'false'
           includeUnitTests: 'false'
   Production:
@@ -58,3 +54,12 @@ jobs:
         with:
           artifact_name: ${{ env.artifactName }}
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Send message
+        uses: gavanlamb/github-actions/.github/actions/slack/released@main
+        if: always()
+        with:
+          environment: Production
+          includeSystemTests: 'false'
+          slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
+          status: ${{ job.status }}
+          version: ${{ needs.build.outputs.version }}
