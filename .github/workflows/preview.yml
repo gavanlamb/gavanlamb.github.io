@@ -55,6 +55,11 @@ jobs:
     needs: build
     environment: Preview
     steps:
+      - name: Replace PR#${{ github.event.pull_request.number }} description variables
+        id: update_pr_description
+        shell: bash
+        run: |
+          echo '${{ toJSON(github) }}'
       - name: Deploy ${{ env.artifactName }}
         uses: gavanlamb/github-actions/.github/actions/hugo/deploy-to-s3@main
         with:
@@ -65,3 +70,7 @@ jobs:
           awsS3Bucket: ${{ vars.AWS_S3_CICD_BUCKET }}
           awsS3Path: ${{ github.repository }}/${{ github.head_ref }}/site
           awsS3Region: ${{ vars.AWS_DEFAULT_REGION }}
+          
+  
+      
+
