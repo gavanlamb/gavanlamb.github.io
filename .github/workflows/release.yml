@@ -36,6 +36,11 @@ jobs:
           artifactName: ${{ env.artifactName }}
           destinationDirectory: site
           sourceDirectory: docs
+          commitBy: ${{ github.actor }}
+          commitDate: ${{ steps.version.outputs.GitCommitDate }}
+          commitId: ${{ steps.version.outputs.GitCommitId }}
+          semanticVersion: ${{ steps.version.outputs.SemVer2 }}
+          version: ${{ steps.version.outputs.Version }}
       - name: Send message
         uses: gavanlamb/github-actions/.github/actions/slack/built@main
         if: always()
