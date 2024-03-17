@@ -29,7 +29,3 @@ jobs:
       - uses: gavanlamb/github-actions/.github/actions/version/create-release@main
         name: Create release
         id: create-release
-        with:
-          githubActor: ${{ github.actor }}
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
-          repositoryName: ${{ github.repository }}
