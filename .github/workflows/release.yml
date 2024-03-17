@@ -1,6 +1,6 @@
 name: Release
 
-run-name: Release:${{ github.ref_name }}
+run-name: ${{ github.ref_name }}
 
 on:
   workflow_dispatch:
@@ -25,7 +25,6 @@ jobs:
         name: Checkout
         with:
           fetch-depth: 0
-          fetch-tags: true
       - name: Generate version
         uses: gavanlamb/github-actions/.github/actions/version/generate@main
         id: version
