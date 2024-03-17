@@ -1,11 +1,10 @@
-name: Pull request raised
-
-run-name: PR#${{ github.event.pull_request.number }}
+name: Prepare pull request for review
 
 on:
   pull_request:
     types:
       - opened
+      - reopened
     branches-ignore:
       - release/**
 
@@ -14,7 +13,7 @@ concurrency:
   group: update-pull-request-description-${{ github.head_ref }}
 
 env: 
-  JIRA_URL: 'https://originenergy.atlassian.net/'
+  JIRA_URL: 'https://gavanlamb-team-1vid7fblvall.atlassian.net/'
 
 jobs:
   update-pr-description:
@@ -28,7 +27,7 @@ jobs:
         id: get-issue-details
         with:
           jiraBaseUrl: ${{ env.JIRA_URL }}
-          jiraUserEmail: gavan.lamb@origin.com.au
+          jiraUserEmail: mail@gavanlamb.com
           jiraApiToken: ${{ secrets.JIRA_API_TOKEN }}
       - name: Update PR
         uses: gavanlamb/github-actions/.github/actions/pull-request/update-pr@main
@@ -43,3 +42,5 @@ jobs:
         with:
           slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
           title: ${{ steps.update-pr.outputs.title }}
+      # TODO
+      ## Update status of Jira ticket to be in review???

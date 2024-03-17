@@ -1,9 +1,10 @@
-﻿name: Preview
+﻿name: Build and deploy pull requests
 
 on:
   pull_request:
     branches-ignore:
       - main
+      - release/**
 
 env:
   artifactName: Website
