@@ -1,11 +1,6 @@
 name: Create release
 
 on:
-#  push:
-#    branches:
-#      - develop
-#    paths-ignore:
-#      - version.json
   workflow_dispatch:
 
 permissions:
@@ -14,7 +9,7 @@ permissions:
 
 concurrency:
   cancel-in-progress: false
-  group: create-release-${{ github.head_ref }}
+  group: create-release-${{ github.ref_name }}
 
 jobs:
   create_release_branch:

@@ -14,7 +14,7 @@ env:
 
 concurrency:
   cancel-in-progress: false
-  group: release-${{ github.head_ref }}
+  group: release-${{ github.head_ref || github.ref_name }}
 
 jobs:
   build:
@@ -25,6 +25,7 @@ jobs:
         name: Checkout
         with:
           fetch-depth: 0
+          fetch-tags: true
       - name: Generate version
         uses: gavanlamb/github-actions/.github/actions/version/generate@main
         id: version
