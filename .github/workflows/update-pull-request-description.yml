@@ -21,6 +21,10 @@ jobs:
       - name: Get issue details
         uses: gavanlamb/github-actions/.github/actions/jira/get-issue-details@main
         id: get-issue-details
+        with:
+          jiraBaseUrl: 'https://originenergy.atlassian.net/'
+          jiraUserEmail: 'gavan.lamb@origin.com.au'
+          jiraApiToken: '${{ secrets.JIRA_API_TOKEN }}'
       - name: Update PR
         uses: gavanlamb/github-actions/.github/actions/jira/get-issue-details@main
         id: update-pr
@@ -34,3 +38,4 @@ jobs:
         with:
           slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
           title: ${{ steps.update-pr.outputs.title }}
+        
