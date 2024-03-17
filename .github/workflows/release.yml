@@ -1,19 +1,21 @@
 name: Release
 
-run-name: Release:${{ github.ref_name }}
+run-name: ${{ github.ref_name }}
 
 on:
-  push:
-    branches:
-      - release/**
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 env:
   artifactName: Website
 
 concurrency:
   cancel-in-progress: false
-  group: release-${{ github.head_ref }}
+  group: release-${{ github.head_ref || github.ref_name }}
 
 jobs:
   build:
