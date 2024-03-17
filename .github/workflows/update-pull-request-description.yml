@@ -41,4 +41,3 @@ jobs:
         with:
           slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
           title: ${{ steps.update-pr.outputs.title }}
-        
