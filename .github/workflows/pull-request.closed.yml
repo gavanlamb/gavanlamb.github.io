@@ -13,8 +13,8 @@ env:
   JIRA_URL: 'https://gavanlamb-team-1vid7fblvall.atlassian.net'
 
 jobs:
-  update-pr-description:
-    name: Update PR description
+  clean-up:
+    name: Clean up after pull request is closed
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
