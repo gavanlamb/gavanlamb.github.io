@@ -41,4 +41,3 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ vars.AWS_DEFAULT_REGION }}
           PATH_TO_DELETE: ${{ github.repository }}/release/preview${{ github.event.pull_request.number }}/site
-      
