@@ -7,10 +7,7 @@ on:
 
 concurrency:
   cancel-in-progress: false
-  group: update-pull-request-description-${{ github.head_ref }}
-
-env:
-  JIRA_URL: 'https://gavanlamb-team-1vid7fblvall.atlassian.net'
+  group: update-pull-request-description-${{ github.ref_name }}
 
 jobs:
   clean-up:
@@ -23,7 +20,7 @@ jobs:
         uses: gavanlamb/github-actions/.github/actions/jira/get-issue-details@main
         id: get-issue-details
         with:
-          baseUrl: ${{ env.JIRA_URL }}/
+          baseUrl: https://gavanlamb-team-1vid7fblvall.atlassian.net
           userEmail: mail@gavanlamb.com
           apiToken: ${{ secrets.JIRA_API_TOKEN }}
       - name: Change issue details

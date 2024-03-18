@@ -10,7 +10,7 @@ on:
 
 concurrency:
   cancel-in-progress: false
-  group: update-pull-request-description-${{ github.head_ref }}
+  group: update-pull-request-description-${{ github.ref_name }}
 
 jobs:
   update-pr-description:

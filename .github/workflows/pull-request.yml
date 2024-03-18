@@ -11,7 +11,7 @@ env:
 
 concurrency:
   cancel-in-progress: false
-  group: preview-${{ github.head_ref }}
+  group: preview-${{ github.ref_name }}
 
 jobs:
   build:
