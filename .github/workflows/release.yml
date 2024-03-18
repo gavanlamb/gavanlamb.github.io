@@ -15,7 +15,7 @@ env:
 
 concurrency:
   cancel-in-progress: false
-  group: release-${{ github.head_ref || github.ref_name }}
+  group: release-${{ github.ref_name }}
 
 jobs:
   build:
@@ -50,10 +50,31 @@ jobs:
           status: ${{ job.status }}
           includeIntegrationTests: 'false'
           includeUnitTests: 'false'
+  Prep:
+    name: Prep
+    runs-on: ubuntu-latest
+    needs: build
+    environment: Prep
+    steps:
+      - uses: actions/deploy-pages@v4
+        name: Deploy ${{ env.artifactName }} to GitHub Pages
+        with:
+          artifact_name: ${{ env.artifactName }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          preview: 'true'
+      - name: Send message
+        uses: gavanlamb/github-actions/.github/actions/slack/released@main
+        if: always()
+        with:
+          environment: Prep
+          includeSystemTests: 'false'
+          slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
+          status: ${{ job.status }}
+          version: ${{ needs.build.outputs.version }}
   Production:
     name: Production
     runs-on: ubuntu-latest
-    needs: build
+    needs: Prep
     environment: Production
     steps:
       - uses: actions/deploy-pages@v4
