@@ -41,6 +41,7 @@ jobs:
           ticketIdentifier: ${{ steps.get-issue-details.outputs.identifier }}
           ticketTitle: ${{ steps.get-issue-details.outputs.title }}
           ticketUrl: ${{ steps.get-issue-details.outputs.url }}
+          environment: preview${{ github.event.pull_request.number }}
       - name: Send message
         uses: gavanlamb/github-actions/.github/actions/slack/pull-request-created@main
         if: always()
