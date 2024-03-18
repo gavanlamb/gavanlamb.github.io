@@ -26,6 +26,14 @@ jobs:
           baseUrl: https://gavanlamb-team-1vid7fblvall.atlassian.net
           userEmail: mail@gavanlamb.com
           apiToken: ${{ secrets.JIRA_API_TOKEN }}
+      - name: Change issue details
+        uses: gavanlamb/github-actions/.github/actions/jira/change-issue-status@main
+        with:
+          baseUrl: https://gavanlamb-team-1vid7fblvall.atlassian.net
+          userEmail: mail@gavanlamb.com
+          apiToken: ${{ secrets.JIRA_API_TOKEN }}
+          identifier: ${{ steps.get-issue-details.outputs.identifier }}
+          status: Review
       - name: Update PR
         uses: gavanlamb/github-actions/.github/actions/pull-request/update-pr@main
         id: update-pr
@@ -39,5 +47,3 @@ jobs:
         with:
           slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
           title: ${{ steps.update-pr.outputs.title }}
-      # TODO
-      ## Update status of Jira ticket to be in review???
