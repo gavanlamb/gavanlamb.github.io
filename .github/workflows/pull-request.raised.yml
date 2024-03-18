@@ -12,9 +12,6 @@ concurrency:
   cancel-in-progress: false
   group: update-pull-request-description-${{ github.head_ref }}
 
-env: 
-  JIRA_URL: 'https://gavanlamb-team-1vid7fblvall.atlassian.net/'
-
 jobs:
   update-pr-description:
     name: Update PR description
@@ -26,16 +23,16 @@ jobs:
         uses: gavanlamb/github-actions/.github/actions/jira/get-issue-details@main
         id: get-issue-details
         with:
-          jiraBaseUrl: ${{ env.JIRA_URL }}
+          jiraBaseUrl: https://gavanlamb-team-1vid7fblvall.atlassian.net
           jiraUserEmail: mail@gavanlamb.com
           jiraApiToken: ${{ secrets.JIRA_API_TOKEN }}
       - name: Update PR
         uses: gavanlamb/github-actions/.github/actions/pull-request/update-pr@main
         id: update-pr
         with:
-          ticketIdentifier: ${{ steps.get-issue-details.outputs.issueIdentifier }}
-          ticketTitle: ${{ steps.get-issue-details.outputs.issueName }}
-          ticketUrl: ${{ env.JIRA_URL }}/browse/${{ steps.get-issue-details.outputs.issueIdentifier }}
+          ticketIdentifier: ${{ steps.get-issue-details.outputs.identifier }}
+          ticketTitle: ${{ steps.get-issue-details.outputs.title }}
+          ticketUrl: ${{ steps.get-issue-details.outputs.url }}
       - name: Send message
         uses: gavanlamb/github-actions/.github/actions/slack/pull-request-created@main
         if: always()
