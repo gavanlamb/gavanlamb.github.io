@@ -1,4 +1,4 @@
-name: Prepare pull request for review
+name: Clean up after pull request is closed
 
 on:
   pull_request:
