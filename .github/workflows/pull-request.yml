@@ -48,7 +48,7 @@ jobs:
           status: ${{ job.status }}
           includeIntegrationTests: 'false'
           includeUnitTests: 'false'
-          
+
   Preview:
     name: Preview
     runs-on: ubuntu-latest
@@ -63,7 +63,7 @@ jobs:
           awsAccessKeyId: ${{ secrets.AWS_ACCESS_KEY_ID }}
           awsSecretAccessKey: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           awsS3Bucket: ${{ vars.AWS_S3_CICD_BUCKET }}
-          awsS3Path: ${{ github.repository }}/${{ github.head_ref }}/site
+          awsS3Path: ${{ github.repository }}/release/preview${{ github.event.pull_request.number }}/site
           awsS3Region: ${{ vars.AWS_DEFAULT_REGION }}
       - name: Send message
         uses: gavanlamb/github-actions/.github/actions/slack/released@main

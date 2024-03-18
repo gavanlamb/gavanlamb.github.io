@@ -1,0 +1,54 @@
+name: Clean up after pull request is closed
+
+on:
+  pull_request:
+    types:
+      - closed
+
+concurrency:
+  cancel-in-progress: false
+  group: update-pull-request-description-${{ github.head_ref }}
+
+env:
+  JIRA_URL: 'https://gavanlamb-team-1vid7fblvall.atlassian.net'
+
+jobs:
+  update-pr-description:
+    name: Update PR description
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout
+      - name: Get issue details
+        uses: gavanlamb/github-actions/.github/actions/jira/get-issue-details@main
+        id: get-issue-details
+        with:
+          jiraBaseUrl: ${{ env.JIRA_URL }}/
+          jiraUserEmail: mail@gavanlamb.com
+          jiraApiToken: ${{ secrets.JIRA_API_TOKEN }}
+      - name: Get issue details
+        uses: gavanlamb/github-actions/.github/actions/jira/get-issue-details@main
+        id: get-issue-details
+        with:
+          jiraBaseUrl: ${{ env.JIRA_URL }}/
+          jiraUserEmail: mail@gavanlamb.com
+          jiraApiToken: ${{ secrets.JIRA_API_TOKEN }}
+      - name: Change issue details
+        uses: gavanlamb/github-actions/.github/actions/jira/change-issue-status@main
+        with:
+          baseUrl: https://gavanlamb-team-1vid7fblvall.atlassian.net
+          userEmail: mail@gavanlamb.com
+          apiToken: ${{ secrets.JIRA_API_TOKEN }}
+          identifier: ${{ steps.get-issue-details.outputs.identifier }}
+          status: Done
+      - name: Remove from S3
+        uses: vitorsgomes/s3-rm-action@master
+        with:
+          args: --recursive
+        env:
+          AWS_S3_BUCKET: ${{ vars.AWS_S3_CICD_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ vars.AWS_DEFAULT_REGION }}
+          PATH_TO_DELETE: ${{ github.repository }}/release/preview${{ github.event.pull_request.number }}/site
+      
