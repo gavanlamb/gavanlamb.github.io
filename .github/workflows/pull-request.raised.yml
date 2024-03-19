@@ -5,8 +5,6 @@ on:
     types:
       - opened
       - reopened
-    branches-ignore:
-      - release/**
 
 concurrency:
   cancel-in-progress: false
@@ -38,9 +36,9 @@ jobs:
         uses: gavanlamb/github-actions/.github/actions/pull-request/update-pr@main
         id: update-pr
         with:
-          ticketIdentifier: ${{ steps.get-issue-details.outputs.identifier }}
-          ticketTitle: ${{ steps.get-issue-details.outputs.title }}
-          ticketUrl: ${{ steps.get-issue-details.outputs.url }}
+          issueIdentifier: ${{ steps.get-issue-details.outputs.identifier }}
+          issueTitle: ${{ steps.get-issue-details.outputs.title }}
+          issueUrl: ${{ steps.get-issue-details.outputs.url }}
           environment: preview${{ github.event.pull_request.number }}
       - name: Send message
         uses: gavanlamb/github-actions/.github/actions/slack/pull-request-created@main
