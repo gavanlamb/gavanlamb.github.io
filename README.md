@@ -5,7 +5,7 @@
 
 ## Pipelines
 ### When a pull request is raised
-[pull-request.opened.yml](.github/workflows/pull-request.opened.yml)
+[pull-request.opened.yml](.github/workflows/pull-request.opened.yml)  
 This pipeline will run on every `opened` and `reopened` pull requests.
 
 This pipeline exists because reviewing pull requests have an overhead to the review process where information is not readily available. This pipeline aims to provide the reviewer with the necessary information to make an informed decision as well as help the developer automate work that is repetitive and time consuming.
@@ -28,7 +28,7 @@ Variable requirements:
 * `SLACK_WEBHOOK_URL`
 
 ### Pull request
-[pull-request.yml](.github/workflows/pull-request.yml)
+[pull-request.yml](.github/workflows/pull-request.yml)  
 This pipeline will run with every push to branch that currently has an active pull request that doesn't target main, yes even the release branch.
 
 This pipeline exists because the pull request pipeline is responsible for building and deploying the assets to a preview environment. This environment is used to preview the changes before merging the pull request. This pipeline will deploy items to an ephemeral environment that will be destroyed once the pull request is closed. The environment name will be `preview{{PR_NUMBER}}` i.e. preview52.
@@ -42,6 +42,26 @@ It will:
 2. Preview
    1. Deploy the site to a preview environment in and S3 bucket - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/hugo/deploy-to-s3/action.yml) for more information
    2. Send a slack message to the slack github channel - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/slack/released/action.yml) for more information
+
+Variable requirements:
+* `AWS_ACCESS_KEY_ID`
+* `AWS_SECRET_ACCESS_KEY`
+* `AWS_S3_CICD_BUCKET`
+* `AWS_DEFAULT_REGION`
+* `JIRA_API_TOKEN`
+* `SLACK_WEBHOOK_URL`
+
+### When a pull request is closed
+[pull-request.closed.yml](.github/workflows/pull-request.closed.yml)
+This pipeline will run on every `closed` pull requests.
+
+This pipeline exists because the pull request pipeline is responsible for cleaning up the preview environment that was created when the pull request was raised. This pipeline will destroy the ephemeral environment that was created when the pull request was raised. The environment name will be `preview{{PR_NUMBER}}` i.e. preview52.
+
+It will:
+1. Checkout code
+2. Try and get the jira issue details from the branch name - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/jira/get-issue-details/action.yml) for more information
+3. Update the Jira issue status to `Done` - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/jira/change-issue-status/action.yml) for more information
+4. Remove the site from the S3 bucket
 
 Variable requirements:
 * `AWS_ACCESS_KEY_ID`
