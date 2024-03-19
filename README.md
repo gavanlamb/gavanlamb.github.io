@@ -5,7 +5,7 @@
 
 ## Pipelines
 ### When a pull request is raised
-[pull-request.raised.yml](.github/workflows/pull-request.raised.yml)
+[pull-request.opened.yml](.github/workflows/pull-request.opened.yml)
 This pipeline will run on every `opened` and `reopened` pull requests.
 
 This pipeline exists because reviewing pull requests have an overhead to the review process where information is not readily available. This pipeline aims to provide the reviewer with the necessary information to make an informed decision as well as help the developer automate work that is repetitive and time consuming.
