@@ -1,15 +1,15 @@
 # Gavan Lamb Website
-![Pipeline](https://github.com/gavanlamb/gavanlamb.github.io/actions/workflows/release.yml/badge.svg)  
+![workflow](https://github.com/gavanlamb/gavanlamb.github.io/actions/workflows/release.yml/badge.svg)  
 ![Version](https://gavanlamb.com/badges/version.svg)  
 [🌎](https://gavanlamb.com/index.html)  
 
-## Pipelines
+## workflows
 ### Pull request raised
 [pull-request.opened.yml](.github/workflows/pull-request.opened.yml)  
 
-This pipeline will run on every `opened` and `reopened` pull requests.
+This workflow will run on every `opened` and `reopened` pull requests.
 
-This pipeline exists because reviewing pull requests have an overhead to the review process where information is not readily available. This pipeline aims to provide the reviewer with the necessary information to make an informed decision as well as help the developer automate work that is repetitive and time consuming.
+This workflow exists because reviewing pull requests have an overhead to the review process where information is not readily available. This workflow aims to provide the reviewer with the necessary information to make an informed decision as well as help the developer automate work that is repetitive and time consuming.
 
 It will:
 1. Checkout the code
@@ -31,9 +31,9 @@ Variable requirements:
 ### Pull request
 [pull-request.yml](.github/workflows/pull-request.yml)  
 
-This pipeline will run with every push to branch that currently has an active pull request that doesn't target main, yes even the release branch.
+This workflow will run with every push to branch that currently has an active pull request that doesn't target main, yes even the release branch.
 
-This pipeline exists because the pull request pipeline is responsible for building and deploying the assets to a preview environment. This environment is used to preview the changes before merging the pull request. This pipeline will deploy items to an ephemeral environment that will be destroyed once the pull request is closed. The environment name will be `preview{{PR_NUMBER}}` i.e. preview52.
+This workflow exists because the pull request workflow is responsible for building and deploying the assets to a preview environment. This environment is used to preview the changes before merging the pull request. This workflow will deploy items to an ephemeral environment that will be destroyed once the pull request is closed. The environment name will be `preview{{PR_NUMBER}}` i.e. preview52.
 
 It will:
 1. build
@@ -56,9 +56,9 @@ Variable requirements:
 ### Pull request closed
 [pull-request.closed.yml](.github/workflows/pull-request.closed.yml)  
 
-This pipeline will run on every `closed` pull requests.
+This workflow will run on every `closed` pull requests.
 
-This pipeline exists because the pull request pipeline is responsible for cleaning up the preview environment that was created when the pull request was raised. This pipeline will destroy the ephemeral environment that was created when the pull request was raised. The environment name will be `preview{{PR_NUMBER}}` i.e. preview52.
+This workflow exists because the pull request workflow is responsible for cleaning up the preview environment that was created when the pull request was raised. This workflow will destroy the ephemeral environment that was created when the pull request was raised. The environment name will be `preview{{PR_NUMBER}}` i.e. preview52.
 
 It will:
 1. Checkout code
@@ -75,12 +75,18 @@ Variable requirements:
 * `SLACK_WEBHOOK_URL`
 
 ### Create release
-[create-release.yml](.github/workflows/create-release.yml)
+[create-release.yml](.github/workflows/release.create.yml)
+
+This workflow is manually triggered and is responsible for create a release branch from the changes in develop.
+
+It will:
+1. Checkout the code
+2. Create a release branch from the develop branch. The release branch will be named `release/vx.x` where `x.x` is the version number. The version number is generated from the version configuration [version.json](version.json) - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/version/create-release/action.yml) for more information
 
 ### Release
 [release.yml](.github/workflows/release.yml)
 
-This pipeline is manually triggered and is responsible for building and release the code in the specified branch. This pipeline will deploy the assets to the production environment. It should only be executed on `release/vx.x` branches.
+This workflow is manually triggered and is responsible for building and release the code in the specified branch. This workflow will deploy the assets to the production environment. It should only be executed on `release/vx.x` branches.
 
 It will:
 1. build
@@ -92,5 +98,5 @@ It will:
    1. Pull the website artifact and deploy the site to the production environment in and S3 bucket
    2. Send a slack message to the slack github channel - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/slack/released/action.yml) for more information
 
-### Release closed
-[release.yml](.github/workflows/release.yml)
+Variable requirements:
+* `SLACK_WEBHOOK_URL`
