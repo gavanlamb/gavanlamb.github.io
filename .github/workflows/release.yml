@@ -71,3 +71,10 @@ jobs:
           slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
           status: ${{ job.status }}
           version: ${{ needs.build.outputs.version }}
+
+# merge to develop
+# merge to main
+# close all jira tickets
+# close Jira release
+# create release
+# send message release is a success
