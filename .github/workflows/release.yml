@@ -21,6 +21,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.Version }}
     steps:
       - uses: actions/checkout@v4
         name: Checkout
