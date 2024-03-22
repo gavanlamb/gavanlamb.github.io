@@ -22,8 +22,9 @@ jobs:
           baseUrl: https://gavanlamb-team-1vid7fblvall.atlassian.net
           userEmail: mail@gavanlamb.com
           apiToken: ${{ secrets.JIRA_API_TOKEN }}
-      - name: Change issue details
+      - name: Update issue details
         uses: gavanlamb/github-actions/.github/actions/jira/change-issue-status@main
+        if: ${{ get-issue-details.outputs.type == 'Subtask' }}
         with:
           baseUrl: https://gavanlamb-team-1vid7fblvall.atlassian.net
           userEmail: mail@gavanlamb.com
