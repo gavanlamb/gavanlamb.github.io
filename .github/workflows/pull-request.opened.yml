@@ -11,10 +11,9 @@ concurrency:
   group: update-pull-request-description-${{ github.ref_name }}
 
 jobs:
-  update-feature-pr-description:
-    name: Jira issues
+  update-pr-description:
+    name: Update PR Description
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.head_ref, 'release/') && !startsWith(github.head_ref, 'main') }}
     steps:
       - name: Get issue details
         uses: gavanlamb/github-actions/.github/actions/jira/get-issue-details@main
@@ -45,22 +44,3 @@ jobs:
         with:
           slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
           title: ${{ steps.update-pr.outputs.title }}
-      
-  update-release-pr-description:
-    name: Releases or main
-    runs-on: ubuntu-latest
-    if: ${{ startsWith(github.head_ref, 'release/') || startsWith(github.head_ref, 'main') }}
-    steps:
-      - name: Apply PR#${{ github.event.pull_request.number }} changes
-        if: startsWith(github.head_ref, 'release/')
-        shell: bash
-        run: |
-          gh pr edit ${{ github.event.pull_request.number }} --title '${{ github.head_ref }}' --body '# ${{ github.head_ref }}' --repo '${{ github.repository }}'
-        env:
-          GH_TOKEN: ${{ github.token }}
-      - name: Send message
-        uses: gavanlamb/github-actions/.github/actions/slack/pull-request-created@main
-        if: always()
-        with:
-          slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
-          title: ${{ github.head_ref }}
