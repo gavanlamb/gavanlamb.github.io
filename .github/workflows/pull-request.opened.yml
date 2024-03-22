@@ -14,11 +14,10 @@ jobs:
   update-pr-description:
     name: Update PR description
     runs-on: ubuntu-latest
-    steps:        
-      - uses: actions/checkout@v2
-        name: Checkout
+    steps:
       - name: Get issue details
         uses: gavanlamb/github-actions/.github/actions/jira/get-issue-details@main
+        if: github.event.pull_request.body != ''
         id: get-issue-details
         with:
           baseUrl: https://gavanlamb-team-1vid7fblvall.atlassian.net
