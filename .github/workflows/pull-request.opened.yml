@@ -24,7 +24,7 @@ jobs:
           apiToken: ${{ secrets.JIRA_API_TOKEN }}
       - name: Update issue details
         uses: gavanlamb/github-actions/.github/actions/jira/change-issue-status@main
-        if: ${{ get-issue-details.outputs.type == 'Subtask' }}
+        if: ${{ steps.get-issue-details.outputs.type == 'subtask' }}
         with:
           baseUrl: https://gavanlamb-team-1vid7fblvall.atlassian.net
           userEmail: mail@gavanlamb.com
