@@ -27,8 +27,10 @@ jobs:
       - name: Open PR to develop
         uses: peter-evans/create-pull-request@v6
         with:
-          branch: develop
+          base: develop
+          branch: ${{ github.ref_name }}
       - name: Open PR to main
         uses: peter-evans/create-pull-request@v6
         with:
-          branch: main
+          base: main
+          branch: ${{ github.ref_name }}
