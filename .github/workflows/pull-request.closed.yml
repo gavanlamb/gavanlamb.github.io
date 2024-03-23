@@ -7,7 +7,7 @@ on:
 
 concurrency:
   cancel-in-progress: false
-  group: pull-request-closed-${{ github.ref_name }}
+  group: pull-request-${{ github.ref_name }}
   
 env:
   environment: Preview${{ github.event.pull_request.number }}
