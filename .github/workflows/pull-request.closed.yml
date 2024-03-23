@@ -8,6 +8,10 @@ on:
 concurrency:
   cancel-in-progress: false
   group: pull-request-closed-${{ github.ref_name }}
+  
+env:
+  environment: Preview${{ github.event.pull_request.number }}
+  sitePath: ${{ github.repository }}/release/preview${{ github.event.pull_request.number }}/site
 
 jobs:
   clean-up:
@@ -39,4 +43,9 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ vars.AWS_DEFAULT_REGION }}
-          PATH_TO_DELETE: ${{ github.repository }}/release/preview${{ github.event.pull_request.number }}/site
+          PATH_TO_DELETE: ${{ env.sitePath }}
+      - name: Delete ${{ env.environment }} environment
+        uses: strumwolf/delete-deployment-environment@v2.2.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: ${{ env.environment }}
