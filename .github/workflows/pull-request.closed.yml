@@ -7,7 +7,7 @@ on:
 
 concurrency:
   cancel-in-progress: false
-  group: update-pull-request-description-${{ github.ref_name }}
+  group: pull-request-closed-${{ github.ref_name }}
 
 jobs:
   clean-up:

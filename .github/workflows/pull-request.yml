@@ -10,7 +10,7 @@ env:
 
 concurrency:
   cancel-in-progress: false
-  group: preview-${{ github.ref_name }}
+  group: pull-request-${{ github.ref_name }}
 
 jobs:
   build:
