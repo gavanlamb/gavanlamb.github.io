@@ -45,7 +45,7 @@ jobs:
           AWS_REGION: ${{ vars.AWS_DEFAULT_REGION }}
           PATH_TO_DELETE: ${{ env.sitePath }}
       - name: Delete ${{ env.environment }} environment
-        uses: strumwolf/delete-deployment-environment@v2.2.3
+        uses: strumwolf/delete-deployment-environment@v3.0.0
         with:
           token: ${{ secrets.PAT_GITHUB_ACTIONS }}
           environment: ${{ env.environment }}
