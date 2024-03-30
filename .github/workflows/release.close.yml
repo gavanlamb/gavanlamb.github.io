@@ -1,0 +1,264 @@
+name: Close release
+
+run-name: ${{ github.ref_name }}
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+env:
+  artifactName: Website
+
+concurrency:
+  cancel-in-progress: false
+  group: close-release
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Generate version
+        uses: gavanlamb/github-actions/.github/actions/version/generate@main
+        id: version
+
+
+      - name: Get PR details
+        shell: bash
+        id: check_pr_state
+        run: |
+          # Get the PRs that match the base and the head for the current repository
+          PULL_REQUESTS=$(gh pr list \
+            --base develop \
+            --head ${{ github.ref_name }} \
+            --json 'id,number,state,url,latestReviews' \
+            --repo '${{ github.repository }}')
+          
+          # Check if there are any PRs
+          PR_COUNT=$(jq -n --argjson pull_requests "$PULL_REQUESTS" '$pull_requests | length')
+          if [ $PR_COUNT -eq 0 ]; then
+            COMMIT_ID=$(git log -1 ${{ github.ref_name }} --pretty=format:"%H")
+            BRANCH=$(git branch -l develop --contains $COMMIT_ID)
+            if [ "$BRANCH" == "develop" ]; then
+              echo "::information::The changes from ${{ github.ref_name }} have already been merged into develop"
+              echo "state=merged" >> $GITHUB_OUTPUT
+            else
+              echo "::error::A PR from ${{ github.ref_name }} to develop has not been created yet"
+              echo "state=not found" >> $GITHUB_OUTPUT
+            fi
+          else
+            PR_APPROVAL_COUNT=$(jq -n --argjson pull_requests "$PULL_REQUESTS" '[ $pull_requests | .latestReviews | .[] | select(.state==\"APPROVED\")] | length')
+            if [ $PR_APPROVAL_COUNT -eq 0 ]; then
+              echo "::error::Cannot find an approved PR for ${{ github.ref_name }} to develop"
+              echo "state=awaiting approval" >> $GITHUB_OUTPUT
+            else
+              echo "state=approved" >> $GITHUB_OUTPUT
+            fi
+          fi
+      - name: Checkout develop
+        uses: actions/checkout@v4
+        if: ${{ success() && steps.check_pr_state.outputs.state == 'approved' }}
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Merge ${{ github.ref_name }} into develop
+        shell: bash
+        if: ${{ success() && steps.check_pr_state.outputs.state == 'approved' }}
+        run: |
+          git merge ${{ github.ref_name }} --ff-only
+      - name: Push develop
+        shell: bash
+        if: ${{ success() && steps.check_pr_state.outputs.state == 'approved' }}
+        run: git push develop --tags --signed=true
+
+      - name: Get PR details
+        shell: bash
+        id: check_pr_state
+        run: |
+          # Get the PRs that match the base and the head for the current repository
+          PULL_REQUESTS=$(gh pr list \
+            --base main \
+            --head ${{ github.ref_name }} \
+            --json 'id,number,state,url,latestReviews' \
+            --repo '${{ github.repository }}')
+          
+          # Check if there are any PRs
+          PR_COUNT=$(jq -n --argjson pull_requests "$PULL_REQUESTS" '$pull_requests | length')
+          if [ $PR_COUNT -eq 0 ]; then
+            COMMIT_ID=$(git log -1 ${{ github.ref_name }} --pretty=format:"%H")
+            BRANCH=$(git branch -l main --contains $COMMIT_ID)
+            if [ "$BRANCH" == "main" ]; then
+              echo "::information::The changes from ${{ github.ref_name }} have already been merged into main"
+              echo "state=merged" >> $GITHUB_OUTPUT
+            else
+              echo "::error::A PR from ${{ github.ref_name }} to main has not been created yet"
+              echo "state=not found" >> $GITHUB_OUTPUT
+            fi
+          else
+            PR_APPROVAL_COUNT=$(jq -n --argjson pull_requests "$PULL_REQUESTS" '[ $pull_requests | .latestReviews | .[] | select(.state==\"APPROVED\")] | length')
+            if [ $PR_APPROVAL_COUNT -eq 0 ]; then
+              echo "::error::Cannot find an approved PR for ${{ github.ref_name }} to main"
+              echo "state=awaiting approval" >> $GITHUB_OUTPUT
+            else
+              echo "state=approved" >> $GITHUB_OUTPUT
+            fi
+          fi
+      - name: Checkout main
+        uses: actions/checkout@v4
+        if: ${{ success() && steps.check_pr_state.outputs.state == 'approved' }}
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Merge ${{ github.ref_name }} into main
+        shell: bash
+        if: ${{ success() && steps.check_pr_state.outputs.state == 'approved' }}
+        run: |
+          git merge ${{ github.ref_name }} --ff-only
+      - name: Push main
+        shell: bash
+        if: ${{ success() && steps.check_pr_state.outputs.state == 'approved' }}
+        run: git push main --tags --signed=true
+
+
+      - name: Create tag name
+        shell: bash
+        id: create_tag_name
+        run: |
+          NAME=v${{ steps.version.outputs.Semver1 }}
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+      - name: Create release notes
+        uses: mikepenz/release-changelog-builder-action@v4.2.0
+        if: ${{ success() && steps.does_tag_exist.outputs.exists == 'true' }}
+        id: build_release_notes
+
+
+      - name: Does tag exist
+        shell: bash
+        id: does_tag_exist
+        run: |
+          if [ $(git tag -l "${{ steps.create_tag_name.outputs.name }}") ]; then
+            echo "exists=false" >> $GITHUB_OUTPUT
+          else
+            echo "exists=true" >> $GITHUB_OUTPUT
+          fi
+        with:
+          configurationJson: |
+            {
+              "categories": [
+            	{
+            	  "keys": "bugs",
+            	  "title": "## 🐛 Bug Fixes",
+            	  "labels": [
+            		"bug",
+            		"bugfix",
+            		"fix"
+            	  ]
+            	},
+            	{
+            	  "keys": "documentation",
+            	  "title": "## 📃  Documentation",
+            	  "labels": [
+            		"docs",
+            		"documentation"
+            	  ]
+            	},
+            	{
+            	  "keys": "features",
+            	  "title": "## 🎁 Features",
+            	  "labels": [
+            		"feat",
+            		"feature",
+            		"enhancement",
+            	  ]
+            	},
+            	{
+            	  "keys": "refactor",
+            	  "title": "## 🔄 Refactor",
+            	  "labels": [
+            		"refactor"
+            	  ]
+            	},
+            	{
+            	  "keys": "style",
+            	  "title": "## 🎨 Style",
+            	  "labels": [
+            		"style"
+            	  ]
+            	},
+            	{
+            	  "keys": "tests",
+            	  "title": "## 🧪 Tests",
+            	  "labels": [
+            		"test"
+            	  ]
+            	},
+            	{
+            	  "keys": "maintenance",
+            	  "title": "## 🛠️ Maintenance",
+            	  "labels": [
+            		"chore"
+            	  ]
+            	}
+              ],
+              "sort": {
+            	"order": "DESC",
+            	"on_property": "mergedAt"
+              },
+              "template": "#{{CHANGELOG}}\n\n<details>\n<summary>Uncategorized</summary>\n\n#{{UNCATEGORIZED}}\n</details>",
+              "pr_template": "- [PR ##{{NUMBER}}](#{{URL}}): #{{TITLE}}",
+              "empty_template": "- no changes",
+              "label_extractor": [
+            	{
+            	  "pattern": "^([^:]+):",
+            	  "on_property": "title",
+            	  "method": "match"
+            	}
+              ],
+              "trim_values": true,
+              "max_back_track_time_days": 365,
+              "exclude_merge_branches": [],
+              "tag_resolver": {
+            	"method": "semver"
+              },
+              "developes": [
+            	"develop"
+              ]
+            }
+          failOnError: true
+          fromTag: ${{ github.sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create tag
+        shell: bash
+        if: ${{ success() && steps.does_tag_exist.outputs.exists == 'true' }}
+        run: git tag -d ${{ steps.create_tag_name.outputs.name }} -s -m '${{ steps.build_release_notes.outputs.changelog }}'
+      - name: Push tag
+        shell: bash
+        if: ${{ success() && steps.does_tag_exist.outputs.exists == 'true' }}
+        run: git push --tags --signed=true
+
+
+      - name: Does release exist
+        uses: insightsengineering/release-existence-action@v1.0.0
+        id: does_release_exist
+        with:
+          release-tag: ${{ steps.create_tag_name.outputs.name }}
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        if: ${{ success() && steps.does_release_exist.outputs.exists == 'true' }}
+        with:
+          tag_name: ${{ steps.create_tag_name.outputs.name }}
+          make_latest: true
+
+
+      # Send slack message
+      # Send email
