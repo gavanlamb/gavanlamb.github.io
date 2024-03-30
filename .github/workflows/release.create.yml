@@ -3,10 +3,6 @@ name: Create release
 on:
   workflow_dispatch:
 
-permissions:
-  contents: write
-  pull-requests: write
-
 concurrency:
   cancel-in-progress: false
   group: create-release-${{ github.ref_name }}
@@ -24,3 +20,8 @@ jobs:
       - uses: gavanlamb/github-actions/.github/actions/version/create-release@main
         name: Create release
         id: create-release
+      - name: Open PR to merge main to release
+        uses: peter-evans/create-pull-request@v6
+        with:
+          base: ${{ steps.create-release.outputs.new-branch }}
+          branch: main
