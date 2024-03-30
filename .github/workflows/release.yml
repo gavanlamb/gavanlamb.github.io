@@ -57,7 +57,9 @@ jobs:
     name: Production
     runs-on: ubuntu-latest
     needs: build
-    environment: Production
+    environment: 
+      name: Production
+      url: https://gavanlamb.com
     steps:
       - uses: actions/deploy-pages@v4
         name: Deploy ${{ env.artifactName }} to GitHub Pages
@@ -74,8 +76,6 @@ jobs:
           status: ${{ job.status }}
           version: ${{ needs.build.outputs.version }}
 
-# merge to develop
-# merge to main
 # close all jira tickets
 # close Jira release
 # create release

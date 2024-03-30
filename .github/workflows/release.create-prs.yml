@@ -1,0 +1,36 @@
+name: Raise release PRs
+
+run-name: ${{ github.ref_name }}
+
+on:
+  workflow_dispatch:
+
+env:
+  artifactName: Website
+
+concurrency:
+  cancel-in-progress: false
+  group: close-release-${{ github.ref_name }}
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.Version }}
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Open PR to develop
+        uses: peter-evans/create-pull-request@v6
+        with:
+          base: develop
+          branch: ${{ github.ref_name }}
+      - name: Open PR to main
+        uses: peter-evans/create-pull-request@v6
+        with:
+          base: main
+          branch: ${{ github.ref_name }}
