@@ -1,4 +1,4 @@
-name: Clean up after pull request is closed
+name: 'Pull request: close'
 
 on:
   pull_request:
@@ -15,7 +15,7 @@ env:
 
 jobs:
   clean-up:
-    name: Clean up after pull request is closed
+    name: Clean up
     runs-on: ubuntu-latest
     steps:
       - name: Get issue details
