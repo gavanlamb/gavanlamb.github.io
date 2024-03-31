@@ -1,4 +1,4 @@
-name: Raise release PRs
+name: 'Release: create PRs'
 
 run-name: ${{ github.ref_name }}
 
@@ -12,9 +12,13 @@ concurrency:
   cancel-in-progress: false
   group: close-release-${{ github.ref_name }}
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
-  build:
-    name: Build
+  Create:
+    name: Create PRs
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.Version }}
@@ -24,13 +28,25 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      - name: Open PR to develop
-        uses: peter-evans/create-pull-request@v6
-        with:
-          base: develop
-          branch: ${{ github.ref_name }}
-      - name: Open PR to main
-        uses: peter-evans/create-pull-request@v6
-        with:
-          base: main
-          branch: ${{ github.ref_name }}
+      - name: Open PR to merge ${{ github.ref_name }} to develop
+        id: open-pr-to-develop
+        shell: bash
+        run: |
+          gh pr create \
+            --base develop \
+            --head ${{ github.ref_name }} \
+            --title "Merge ${{ github.ref_name }} to develop" \
+            --body "Merge ${{ github.ref_name }} to develop"
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Open PR to merge ${{ github.ref_name }} to main
+        id: open-pr-to-main
+        shell: bash
+        run: |
+          gh pr create \
+            --base main \
+            --head ${{ github.ref_name }} \
+            --title "Merge ${{ github.ref_name }} to main" \
+            --body "Merge ${{ github.ref_name }} to main"
+        env:
+          GH_TOKEN: ${{ github.token }}
