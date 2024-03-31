@@ -1,4 +1,4 @@
-name: Create release
+name: 'Release: create'
 
 on:
   workflow_dispatch:
@@ -6,6 +6,10 @@ on:
 concurrency:
   cancel-in-progress: false
   group: create-release-${{ github.ref_name }}
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   create_release_branch:
@@ -20,8 +24,14 @@ jobs:
       - uses: gavanlamb/github-actions/.github/actions/version/create-release@main
         name: Create release
         id: create-release
-      - name: Open PR to merge main to release
-        uses: peter-evans/create-pull-request@v6
-        with:
-          base: ${{ steps.create-release.outputs.new-branch }}
-          branch: main
+      - name: Open PR to merge main to ${{ steps.create-release.outputs.new-branch }}
+        id: prepare-release
+        shell: bash
+        run: |
+          gh pr create \
+            --base ${{ steps.create-release.outputs.new-branch }} \
+            --head main \
+            --title "Merge main to ${{ steps.create-release.outputs.new-branch }}" \
+            --body "Merge main to ${{ steps.create-release.outputs.new-branch }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
