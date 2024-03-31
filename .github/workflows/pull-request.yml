@@ -1,4 +1,4 @@
-﻿name: Build and deploy pull requests
+﻿name: 'Pull request: build and deploy'
 
 on:
   pull_request:

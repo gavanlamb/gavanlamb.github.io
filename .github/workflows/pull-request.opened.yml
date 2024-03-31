@@ -1,4 +1,4 @@
-name: Prepare pull request for review
+name: 'Pull request: opened'
 
 on:
   pull_request:
@@ -11,8 +11,8 @@ concurrency:
   group: pull-request-${{ github.ref_name }}
 
 jobs:
-  update-pr-description:
-    name: Update PR Description
+  update:
+    name: Update PR description
     runs-on: ubuntu-latest
     steps:
       - name: Get issue details
