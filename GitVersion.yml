@@ -1,0 +1,98 @@
+#assembly-versioning-scheme: MajorMinorPatchTag
+assembly-versioning-format: '{Major}.{Minor}.{Patch}.{env:BUILD_NUMBER ?? 0}'
+#assembly-file-versioning-scheme: MajorMinorPatchTag
+assembly-file-versioning-format: '{Major}.{Minor}.{Patch}.{env:BUILD_NUMBER ?? 0}'
+#assembly-informational-scheme: MajorMinorPatchTag
+assembly-informational-format: '{Major}.{Minor}.{Patch}.{env:BUILD_NUMBER ?? 0}'
+tag-prefix: v
+major-version-bump-message: '\+semver:\s?(breaking|major)'
+minor-version-bump-message: '\+semver:\s?(feature|minor)'
+patch-version-bump-message: '\+semver:\s?(fix|patch)'
+no-bump-message: '\+semver:\s?(none|skip)'
+legacy-semver-padding: 4
+build-metadata-padding: 4
+commit-message-incrementing: Disabled
+commit-date-format: 'yyyy-MM-dd'
+update-build-number: true
+#next-version: 2.0.0
+
+branches:
+  main:
+    regex: ^main$
+    tag: ''
+    increment: Patch
+    mode: ContinuousDeployment
+    prevent-increment-of-merged-branch-version: true
+    track-merge-target: false
+    is-release-branch: false
+    tracks-release-branches: false
+    is-mainline: true
+    pre-release-weight: 55000
+  hotfix:
+    regex: ^hotfix.*$
+    tag: ''
+    source-branches:
+      - main
+    mode: ContinuousDelivery
+    increment: Patch
+    prevent-increment-of-merged-branch-version: false
+    track-merge-target: false
+    is-release-branch: false
+    tracks-release-branches: false
+    is-mainline: false
+    pre-release-weight: 30000
+  release:
+    regex: ^release\/v\d+\.\d+\.\d+$
+    tag: ''
+    source-branches: 
+      - develop
+    mode: ContinuousDelivery
+    increment: Patch
+    prevent-increment-of-merged-branch-version: true
+    track-merge-target: false
+    tracks-release-branches: false
+    is-release-branch: true
+    is-mainline: false
+    pre-release-weight: 30000
+  develop:
+    regex: ^develop$
+    tag: beta
+    source-branches:
+      - main
+    mode: ContinuousDeployment
+    prevent-increment-of-merged-branch-version: false
+    track-merge-target: true
+    tracks-release-branches: true
+    is-release-branch: false
+    is-mainline: false
+    pre-release-weight: 0
+  feature:
+    regex: ^(feature|feat|fix|docs|style|refactor|test|chore)[/-]
+    tag: alpha
+    source-branches:
+      - develop
+      - feature
+    mode: ContinuousDelivery
+    prevent-increment-of-merged-branch-version: true
+    track-merge-target: false
+    tracks-release-branches: false
+    is-release-branch: false
+    is-mainline: false
+    pre-release-weight: 30000
+    
+  pull-request:
+    regex: ^(pull|pull\-requests|pr)[/-]
+    tag: pull-request
+    mode: ContinuousDelivery
+    prevent-increment-of-merged-branch-version: true
+    tag-number-pattern: '[/-](?<number>\d+)[-/]'
+    track-merge-target: false
+    tracks-release-branches: false
+    is-release-branch: false
+    is-mainline: false
+    pre-release-weight: 30000
+    
+
+ignore:
+  sha: []
+merge-message-formats: {}
