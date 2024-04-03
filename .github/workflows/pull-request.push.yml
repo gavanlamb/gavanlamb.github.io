@@ -1,4 +1,4 @@
-﻿name: 'Pull request: build and deploy'
+﻿name: 'Pull request: push'
 
 on:
   pull_request:
@@ -17,33 +17,33 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     outputs: 
-      version: ${{ steps.version.outputs.Version }}
+      version: ${{ steps.get-version.outputs.semVer }}
     steps:
       - uses: actions/checkout@v4
         name: Checkout
         with:
           fetch-depth: 0
           fetch-tags: true
-      - name: Generate version
-        uses: gavanlamb/github-actions/.github/actions/version/generate@main
-        id: version
+      - name: Get version
+        uses: gavanlamb/github-actions/.github/actions/version/get@main
+        id: get-version
       - name: Build site
         uses: gavanlamb/github-actions/.github/actions/hugo/build@main
         with:
           artifactName: ${{ env.artifactName }}
           commitBy: ${{ github.actor }}
-          commitDate: ${{ steps.version.outputs.GitCommitDate }}
-          commitId: ${{ steps.version.outputs.GitCommitId }}
+          commitDate: ${{ steps.get-version.outputs.commitDate }}
+          commitId: ${{ steps.get-version.outputs.sha }}
           destinationDirectory: site
           sourceDirectory: docs
-          semanticVersion: ${{ steps.version.outputs.SemVer2 }}
-          version: ${{ steps.version.outputs.Version }}
+          semanticVersion: ${{ steps.get-version.outputs.semVer }}
+          version: ${{ steps.get-version.outputs.fullSemVer }}
       - name: Send message
         uses: gavanlamb/github-actions/.github/actions/slack/built@main
         if: always()
         with:
           slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
-          version: ${{ steps.version.outputs.Version }}
+          version: ${{ steps.get-version.outputs.semVer }}
           status: ${{ job.status }}
           includeIntegrationTests: 'false'
           includeUnitTests: 'false'
