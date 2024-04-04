@@ -20,7 +20,7 @@ branches:
   main:
     regex: ^main$
     tag: ''
-    increment: Patch
+    increment: Minor
     mode: ContinuousDelivery
     prevent-increment-of-merged-branch-version: true
     track-merge-target: false
@@ -47,7 +47,7 @@ branches:
     source-branches: 
       - develop
     mode: ContinuousDelivery
-    increment: minor
+    increment: Minor
     prevent-increment-of-merged-branch-version: true
     track-merge-target: false
     tracks-release-branches: false
