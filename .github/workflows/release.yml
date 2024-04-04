@@ -3,12 +3,15 @@ name: 'Release'
 run-name: ${{ github.ref_name }}
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - release*
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
+  pull-requests: write
 
 env:
   artifactName: Website
@@ -29,8 +32,8 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      - name: Generate version
-        uses: gavanlamb/github-actions/.github/actions/version/generate@main
+      - name: Get version
+        uses: gavanlamb/github-actions/.github/actions/version/get@main
         id: version
       - name: Build site
         uses: gavanlamb/github-actions/.github/actions/hugo/build@main
@@ -52,6 +55,41 @@ jobs:
           status: ${{ job.status }}
           includeIntegrationTests: 'false'
           includeUnitTests: 'false'
+  
+  Create:
+    name: Create PRs
+    runs-on: ubuntu-latest
+    needs: Build
+    outputs:
+      version: ${{ steps.version.outputs.Version }}
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Open PR to merge ${{ github.ref_name }} to develop
+        id: open-pr-to-develop
+        shell: bash
+        run: |
+          gh pr create \
+            --base develop \
+            --head ${{ github.ref_name }} \
+            --title "Merge ${{ github.ref_name }} to develop" \
+            --body "Merge ${{ github.ref_name }} to develop"
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Open PR to merge ${{ github.ref_name }} to main
+        id: open-pr-to-main
+        shell: bash
+        run: |
+          gh pr create \
+            --base main \
+            --head ${{ github.ref_name }} \
+            --title "Merge ${{ github.ref_name }} to main" \
+            --body "Merge ${{ github.ref_name }} to main"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
   Production:
     name: Production
@@ -75,6 +113,278 @@ jobs:
           slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
           status: ${{ job.status }}
           version: ${{ needs.build.outputs.version }}
+
+  Close:
+    name: Close
+    runs-on: ubuntu-latest
+    needs: Production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Generate version
+        uses: gavanlamb/github-actions/.github/actions/version/generate@main
+        id: version
+
+
+      - name: Get PR details
+        shell: bash
+        id: check_pr_state_develop
+        run: |
+          # Get the PRs that match the base and the head for the current repository
+          PULL_REQUESTS=$(gh pr list \
+            --base develop \
+            --head ${{ github.ref_name }} \
+            --json 'id,number,state,url,latestReviews' \
+            --repo '${{ github.repository }}')
+
+          # Check if there are any PRs
+          PR_COUNT=$(jq -n --argjson pull_requests "$PULL_REQUESTS" '$pull_requests | length')
+          if [ $PR_COUNT -eq 0 ]; then
+            COMMIT_ID=$(git log -1 ${{ github.ref_name }} --pretty=format:"%H")
+            BRANCH=$(git branch -l develop --contains $COMMIT_ID)
+            if [ "$BRANCH" == "develop" ]; then
+              echo "::information::The changes from ${{ github.ref_name }} have already been merged into develop"
+              echo "state=merged" >> $GITHUB_OUTPUT
+            else
+              echo "::error::A PR from ${{ github.ref_name }} to develop has not been created yet"
+              echo "state=not found" >> $GITHUB_OUTPUT
+            fi
+          else
+            PR_APPROVAL_COUNT=$(jq -n --argjson pull_requests "$PULL_REQUESTS" '[ $pull_requests[] | .latestReviews | .[] | select(.state=="APPROVED")] | length')
+            if [ $PR_APPROVAL_COUNT -eq 0 ]; then
+              echo "::error::Cannot find an approved PR for ${{ github.ref_name }} to develop"
+              echo "state=awaiting approval" >> $GITHUB_OUTPUT
+            else
+              echo "state=approved" >> $GITHUB_OUTPUT
+            fi
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Setup git user
+        shell: bash
+        if: ${{ success() && steps.check_pr_state_develop.outputs.state == 'approved' }}
+        run: |
+          git config user.name '${{ github.actor }}'
+          git config user.email '${{ github.actor }}@users.noreply.github.com'
+          git remote set-url origin https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}
+      - name: Checkout develop
+        shell: bash
+        if: ${{ success() && steps.check_pr_state_develop.outputs.state == 'approved' }}
+        run: |
+          git fetch --all
+          git checkout develop
+      - name: Merge ${{ github.ref_name }} into develop
+        shell: bash
+        if: ${{ success() && steps.check_pr_state_develop.outputs.state == 'approved' }}
+        run: |
+          git merge origin/${{ github.ref_name }}
+      - name: Push develop
+        shell: bash
+        if: ${{ success() && steps.check_pr_state_develop.outputs.state == 'approved' }}
+        run: git push origin develop
+
+      - name: Get PR details
+        shell: bash
+        id: check_pr_state_main
+        run: |
+          # Get the PRs that match the base and the head for the current repository
+          PULL_REQUESTS=$(gh pr list \
+            --base main \
+            --head ${{ github.ref_name }} \
+            --json 'id,number,state,url,latestReviews' \
+            --repo '${{ github.repository }}')
+
+          # Check if there are any PRs
+          PR_COUNT=$(jq -n --argjson pull_requests "$PULL_REQUESTS" '$pull_requests | length')
+          if [ $PR_COUNT -eq 0 ]; then
+            COMMIT_ID=$(git log -1 ${{ github.ref_name }} --pretty=format:"%H")
+            BRANCH=$(git branch -l main --contains $COMMIT_ID)
+            if [ "$BRANCH" == "main" ]; then
+              echo "::information::The changes from ${{ github.ref_name }} have already been merged into main"
+              echo "state=merged" >> $GITHUB_OUTPUT
+            else
+              echo "::error::A PR from ${{ github.ref_name }} to main has not been created yet"
+              echo "state=not found" >> $GITHUB_OUTPUT
+            fi
+          else
+            PR_APPROVAL_COUNT=$(jq -n --argjson pull_requests "$PULL_REQUESTS" '[ $pull_requests[] | .latestReviews | .[] | select(.state=="APPROVED")] | length')
+            if [ $PR_APPROVAL_COUNT -eq 0 ]; then
+              echo "::error::Cannot find an approved PR for ${{ github.ref_name }} to main"
+              echo "state=awaiting approval" >> $GITHUB_OUTPUT
+            else
+              echo "state=approved" >> $GITHUB_OUTPUT
+            fi
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Setup git user
+        shell: bash
+        if: ${{ success() && steps.check_pr_state_main.outputs.state == 'approved' }}
+        run: |
+          git config user.name '${{ github.actor }}'
+          git config user.email '${{ github.actor }}@users.noreply.github.com'
+          git remote set-url origin https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}
+      - name: Checkout main
+        shell: bash
+        if: ${{ success() && steps.check_pr_state_main.outputs.state == 'approved' }}
+        run: |
+          git fetch --all
+          git checkout main
+      - name: Merge ${{ github.ref_name }} into main
+        shell: bash
+        if: ${{ success() && steps.check_pr_state_main.outputs.state == 'approved' }}
+        run: |
+          git merge origin/${{ github.ref_name }}
+      - name: Push main
+        shell: bash
+        if: ${{ success() && steps.check_pr_state_main.outputs.state == 'approved' }}
+        run: git push origin main
+
+
+      - name: Create tag name
+        shell: bash
+        id: create_tag_name
+        run: |
+          NAME=v${{ steps.version.outputs.Semver1 }}
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+      - name: Create release notes
+        uses: mikepenz/release-changelog-builder-action@v5.0.0-a02
+        id: build_release_notes
+        with:
+          configurationJson: |
+            {
+              "categories": [
+                {
+                  "keys": "bugs",
+                  "title": "## 🐛 Bug Fixes",
+                  "labels": [
+                    "bug",
+                    "bugfix",
+                    "fix"
+                  ]
+                },
+                {
+                  "keys": "documentation",
+                  "title": "## 📃 Documentation",
+                  "labels": [
+                    "docs",
+                    "documentation"
+                  ]
+                },
+                {
+                  "keys": "features",
+                  "title": "## 🎁 Features",
+                  "labels": [
+                    "feat",
+                    "feature",
+                    "enhancement"
+                  ]
+                },
+                {
+                  "keys": "refactor",
+                  "title": "## 🔄 Refactor",
+                  "labels": [
+                    "refactor"
+                  ]
+                },
+                {
+                  "keys": "style",
+                  "title": "## 🎨 Style",
+                  "labels": [
+                    "style"
+                  ]
+                },
+                {
+                  "keys": "tests",
+                  "title": "## 🧪 Tests",
+                  "labels": [
+                    "test"
+                  ]
+                },
+                {
+                  "keys": "maintenance",
+                  "title": "## 🛠️ Maintenance",
+                  "labels": [
+                    "chore"
+                  ]
+                }
+              ],
+              "sort": {
+                "order": "DESC",
+                "on_property": "mergedAt"
+              },
+              "template": "#{{CHANGELOG}}\n\n# Uncategorised\n\n#{{UNCATEGORIZED}}",
+              "pr_template": "- #{{TITLE}}",
+              "empty_template": "- no changes",
+              "label_extractor": [
+                {
+                  "pattern": "^([^:]+):(.*)",
+                  "on_property": "title",
+                  "target": "$1",
+                  "flags": "giu"
+                }
+              ],
+              "trim_values": true,
+              "max_back_track_time_days": 365,
+              "exclude_merge_branches": [],
+              "tag_resolver": {
+                "method": "semver"
+              },
+              "base_branches": [
+                "develop"
+              ]
+            }
+          failOnError: false
+          toTag: ${{ github.sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+
+      - name: Does tag exist
+        shell: bash
+        id: does_tag_exist
+        run: |
+          if [ $(git tag -l "${{ steps.create_tag_name.outputs.name }}") ]; then
+            echo "exists=false" >> $GITHUB_OUTPUT
+          else
+            echo "exists=true" >> $GITHUB_OUTPUT
+          fi
+      - name: Setup git user
+        shell: bash
+        if: ${{ success() && steps.does_tag_exist.outputs.exists == 'true' }}
+        run: |
+          git config user.name '${{ github.actor }}'
+          git config user.email '${{ github.actor }}@users.noreply.github.com'
+          git remote set-url origin https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}
+      - name: Create tag
+        shell: bash
+        if: ${{ success() && steps.does_tag_exist.outputs.exists == 'true' }}
+        run: git tag ${{ steps.create_tag_name.outputs.name }} -m "${{ steps.create_tag_name.outputs.name }}"
+      - name: Push tag
+        shell: bash
+        if: ${{ success() && steps.does_tag_exist.outputs.exists == 'true' }}
+        run: git push --tags
+
+
+      - name: Does release exist
+        uses: insightsengineering/release-existence-action@v1.0.0
+        id: does_release_exist
+        with:
+          release-tag: ${{ steps.create_tag_name.outputs.name }}
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        if: ${{ success() && steps.does_release_exist.outputs.release-exists == 'false' }}
+        with:
+          body: ${{ steps.build_release_notes.outputs.changelog }}
+          tag_name: ${{ steps.create_tag_nam1e.outputs.name }}
+          make_latest: true
+
+
+      # Send slack message
+      # Send email
 
 # close all jira tickets
 # close Jira release
