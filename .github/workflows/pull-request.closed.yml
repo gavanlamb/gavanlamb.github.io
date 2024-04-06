@@ -1,4 +1,4 @@
-name: 'Pull request: close'
+name: 'Pull request: closed'
 
 on:
   pull_request:
