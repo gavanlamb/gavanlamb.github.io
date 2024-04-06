@@ -14,7 +14,7 @@ permissions:
   pull-requests: write
 
 env:
-  artifactName: Website
+  artifact-name: Website
 
 concurrency:
   cancel-in-progress: false
@@ -25,7 +25,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.Version }}
+      version: ${{ steps.get-version.outputs.sem-ver }}
     steps:
       - uses: actions/checkout@v4
         name: Checkout
@@ -34,34 +34,32 @@ jobs:
           fetch-tags: true
       - name: Get version
         uses: gavanlamb/github-actions/.github/actions/version/get@main
-        id: version
+        id: get-version
       - name: Build site
         uses: gavanlamb/github-actions/.github/actions/hugo/build@main
         with:
-          artifactName: ${{ env.artifactName }}
-          destinationDirectory: site
-          sourceDirectory: docs
-          commitBy: ${{ github.actor }}
-          commitDate: ${{ steps.version.outputs.GitCommitDate }}
-          commitId: ${{ steps.version.outputs.GitCommitId }}
-          semanticVersion: ${{ steps.version.outputs.SemVer2 }}
-          version: ${{ steps.version.outputs.Version }}
+          artifact-name: ${{ env.artifact-name }}
+          commit-by: ${{ github.actor }}
+          commit-date: ${{ steps.get-version.outputs.commit-date }}
+          commit-id: ${{ steps.get-version.outputs.sha }}
+          destination-directory: site
+          source-directory: docs
+          semantic-version: ${{ steps.get-version.outputs.sem-ver }}
+          version: ${{ steps.get-version.outputs.full-sem-ver }}
       - name: Send message
         uses: gavanlamb/github-actions/.github/actions/slack/built@main
         if: always()
         with:
-          slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
-          version: ${{ steps.version.outputs.Version }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          version: ${{ steps.get-version.outputs.version }}
           status: ${{ job.status }}
-          includeIntegrationTests: 'false'
-          includeUnitTests: 'false'
-  
-  Create:
+          include-integration-tests: 'false'
+          include-unit-tests: 'false'
+
+  Create-PRs:
     name: Create PRs
     runs-on: ubuntu-latest
     needs: Build
-    outputs:
-      version: ${{ steps.version.outputs.Version }}
     steps:
       - uses: actions/checkout@v4
         name: Checkout
@@ -94,299 +92,63 @@ jobs:
   Production:
     name: Production
     runs-on: ubuntu-latest
-    needs: build
+    needs: 
+      - Build
+      - Create-PRs
     environment: 
       name: Production
       url: https://gavanlamb.com
     steps:
       - uses: actions/deploy-pages@v4
-        name: Deploy ${{ env.artifactName }} to GitHub Pages
+        name: Deploy ${{ env.artifact-name }} to GitHub Pages
         with:
-          artifact_name: ${{ env.artifactName }}
+          artifact_name: ${{ env.artifact-name }}
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Send message
         uses: gavanlamb/github-actions/.github/actions/slack/released@main
         if: always()
         with:
           environment: Production
-          includeSystemTests: 'false'
-          slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
+          include-system-tests: 'false'
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
           status: ${{ job.status }}
           version: ${{ needs.build.outputs.version }}
 
   Close:
     name: Close
     runs-on: ubuntu-latest
-    needs: Production
+    needs:
+      - Build
+      - Production
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           fetch-tags: true
-
-      - name: Generate version
-        uses: gavanlamb/github-actions/.github/actions/version/generate@main
-        id: version
-
-
-      - name: Get PR details
-        shell: bash
-        id: check_pr_state_develop
-        run: |
-          # Get the PRs that match the base and the head for the current repository
-          PULL_REQUESTS=$(gh pr list \
-            --base develop \
-            --head ${{ github.ref_name }} \
-            --json 'id,number,state,url,latestReviews' \
-            --repo '${{ github.repository }}')
-
-          # Check if there are any PRs
-          PR_COUNT=$(jq -n --argjson pull_requests "$PULL_REQUESTS" '$pull_requests | length')
-          if [ $PR_COUNT -eq 0 ]; then
-            COMMIT_ID=$(git log -1 ${{ github.ref_name }} --pretty=format:"%H")
-            BRANCH=$(git branch -l develop --contains $COMMIT_ID)
-            if [ "$BRANCH" == "develop" ]; then
-              echo "::information::The changes from ${{ github.ref_name }} have already been merged into develop"
-              echo "state=merged" >> $GITHUB_OUTPUT
-            else
-              echo "::error::A PR from ${{ github.ref_name }} to develop has not been created yet"
-              echo "state=not found" >> $GITHUB_OUTPUT
-            fi
-          else
-            PR_APPROVAL_COUNT=$(jq -n --argjson pull_requests "$PULL_REQUESTS" '[ $pull_requests[] | .latestReviews | .[] | select(.state=="APPROVED")] | length')
-            if [ $PR_APPROVAL_COUNT -eq 0 ]; then
-              echo "::error::Cannot find an approved PR for ${{ github.ref_name }} to develop"
-              echo "state=awaiting approval" >> $GITHUB_OUTPUT
-            else
-              echo "state=approved" >> $GITHUB_OUTPUT
-            fi
-          fi
-        env:
-          GH_TOKEN: ${{ github.token }}
-      - name: Setup git user
-        shell: bash
-        if: ${{ success() && steps.check_pr_state_develop.outputs.state == 'approved' }}
-        run: |
-          git config user.name '${{ github.actor }}'
-          git config user.email '${{ github.actor }}@users.noreply.github.com'
-          git remote set-url origin https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}
-      - name: Checkout develop
-        shell: bash
-        if: ${{ success() && steps.check_pr_state_develop.outputs.state == 'approved' }}
-        run: |
-          git fetch --all
-          git checkout develop
-      - name: Merge ${{ github.ref_name }} into develop
-        shell: bash
-        if: ${{ success() && steps.check_pr_state_develop.outputs.state == 'approved' }}
-        run: |
-          git merge origin/${{ github.ref_name }}
-      - name: Push develop
-        shell: bash
-        if: ${{ success() && steps.check_pr_state_develop.outputs.state == 'approved' }}
-        run: git push origin develop
-
-      - name: Get PR details
-        shell: bash
-        id: check_pr_state_main
-        run: |
-          # Get the PRs that match the base and the head for the current repository
-          PULL_REQUESTS=$(gh pr list \
-            --base main \
-            --head ${{ github.ref_name }} \
-            --json 'id,number,state,url,latestReviews' \
-            --repo '${{ github.repository }}')
-
-          # Check if there are any PRs
-          PR_COUNT=$(jq -n --argjson pull_requests "$PULL_REQUESTS" '$pull_requests | length')
-          if [ $PR_COUNT -eq 0 ]; then
-            COMMIT_ID=$(git log -1 ${{ github.ref_name }} --pretty=format:"%H")
-            BRANCH=$(git branch -l main --contains $COMMIT_ID)
-            if [ "$BRANCH" == "main" ]; then
-              echo "::information::The changes from ${{ github.ref_name }} have already been merged into main"
-              echo "state=merged" >> $GITHUB_OUTPUT
-            else
-              echo "::error::A PR from ${{ github.ref_name }} to main has not been created yet"
-              echo "state=not found" >> $GITHUB_OUTPUT
-            fi
-          else
-            PR_APPROVAL_COUNT=$(jq -n --argjson pull_requests "$PULL_REQUESTS" '[ $pull_requests[] | .latestReviews | .[] | select(.state=="APPROVED")] | length')
-            if [ $PR_APPROVAL_COUNT -eq 0 ]; then
-              echo "::error::Cannot find an approved PR for ${{ github.ref_name }} to main"
-              echo "state=awaiting approval" >> $GITHUB_OUTPUT
-            else
-              echo "state=approved" >> $GITHUB_OUTPUT
-            fi
-          fi
-        env:
-          GH_TOKEN: ${{ github.token }}
-      - name: Setup git user
-        shell: bash
-        if: ${{ success() && steps.check_pr_state_main.outputs.state == 'approved' }}
-        run: |
-          git config user.name '${{ github.actor }}'
-          git config user.email '${{ github.actor }}@users.noreply.github.com'
-          git remote set-url origin https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}
-      - name: Checkout main
-        shell: bash
-        if: ${{ success() && steps.check_pr_state_main.outputs.state == 'approved' }}
-        run: |
-          git fetch --all
-          git checkout main
-      - name: Merge ${{ github.ref_name }} into main
-        shell: bash
-        if: ${{ success() && steps.check_pr_state_main.outputs.state == 'approved' }}
-        run: |
-          git merge origin/${{ github.ref_name }}
-      - name: Push main
-        shell: bash
-        if: ${{ success() && steps.check_pr_state_main.outputs.state == 'approved' }}
-        run: git push origin main
-
-
       - name: Create tag name
         shell: bash
-        id: create_tag_name
+        id: create-tag-name
         run: |
-          NAME=v${{ steps.version.outputs.Semver1 }}
+          NAME=v${{ needs.build.outputs.version }}
           echo "name=$NAME" >> $GITHUB_OUTPUT
-      - name: Create release notes
-        uses: mikepenz/release-changelog-builder-action@v5.0.0-a02
-        id: build_release_notes
+      - name: Merge ${{ github.ref_name }} into develop
+        uses: gavanlamb/github-actions/.github/actions/release/merge-release@main
         with:
-          configurationJson: |
-            {
-              "categories": [
-                {
-                  "keys": "bugs",
-                  "title": "## 🐛 Bug Fixes",
-                  "labels": [
-                    "bug",
-                    "bugfix",
-                    "fix"
-                  ]
-                },
-                {
-                  "keys": "documentation",
-                  "title": "## 📃 Documentation",
-                  "labels": [
-                    "docs",
-                    "documentation"
-                  ]
-                },
-                {
-                  "keys": "features",
-                  "title": "## 🎁 Features",
-                  "labels": [
-                    "feat",
-                    "feature",
-                    "enhancement"
-                  ]
-                },
-                {
-                  "keys": "refactor",
-                  "title": "## 🔄 Refactor",
-                  "labels": [
-                    "refactor"
-                  ]
-                },
-                {
-                  "keys": "style",
-                  "title": "## 🎨 Style",
-                  "labels": [
-                    "style"
-                  ]
-                },
-                {
-                  "keys": "tests",
-                  "title": "## 🧪 Tests",
-                  "labels": [
-                    "test"
-                  ]
-                },
-                {
-                  "keys": "maintenance",
-                  "title": "## 🛠️ Maintenance",
-                  "labels": [
-                    "chore"
-                  ]
-                }
-              ],
-              "sort": {
-                "order": "DESC",
-                "on_property": "mergedAt"
-              },
-              "template": "#{{CHANGELOG}}\n\n# Uncategorised\n\n#{{UNCATEGORIZED}}",
-              "pr_template": "- #{{TITLE}}",
-              "empty_template": "- no changes",
-              "label_extractor": [
-                {
-                  "pattern": "^([^:]+):(.*)",
-                  "on_property": "title",
-                  "target": "$1",
-                  "flags": "giu"
-                }
-              ],
-              "trim_values": true,
-              "max_back_track_time_days": 365,
-              "exclude_merge_branches": [],
-              "tag_resolver": {
-                "method": "semver"
-              },
-              "base_branches": [
-                "develop"
-              ]
-            }
-          failOnError: false
-          toTag: ${{ github.sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-
-      - name: Does tag exist
-        shell: bash
-        id: does_tag_exist
-        run: |
-          if [ $(git tag -l "${{ steps.create_tag_name.outputs.name }}") ]; then
-            echo "exists=false" >> $GITHUB_OUTPUT
-          else
-            echo "exists=true" >> $GITHUB_OUTPUT
-          fi
-      - name: Setup git user
-        shell: bash
-        if: ${{ success() && steps.does_tag_exist.outputs.exists == 'true' }}
-        run: |
-          git config user.name '${{ github.actor }}'
-          git config user.email '${{ github.actor }}@users.noreply.github.com'
-          git remote set-url origin https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}
+          base-branch-name: develop
+      - name: Merge ${{ github.ref_name }} into main
+        uses: gavanlamb/github-actions/.github/actions/release/merge-release@main
+        with:
+          base-branch-name: main
       - name: Create tag
-        shell: bash
-        if: ${{ success() && steps.does_tag_exist.outputs.exists == 'true' }}
-        run: git tag ${{ steps.create_tag_name.outputs.name }} -m "${{ steps.create_tag_name.outputs.name }}"
-      - name: Push tag
-        shell: bash
-        if: ${{ success() && steps.does_tag_exist.outputs.exists == 'true' }}
-        run: git push --tags
-
-
-      - name: Does release exist
-        uses: insightsengineering/release-existence-action@v1.0.0
-        id: does_release_exist
+        uses: gavanlamb/github-actions/.github/actions/release/create-tag@main
         with:
-          release-tag: ${{ steps.create_tag_name.outputs.name }}
-      - name: Create release
-        uses: softprops/action-gh-release@v2
-        if: ${{ success() && steps.does_release_exist.outputs.release-exists == 'false' }}
+          tag-name: ${{ steps.create-tag-name.outputs.name }}
+      - name: Create GitHub release
+        uses: gavanlamb/github-actions/.github/actions/release/create-notes@main
         with:
-          body: ${{ steps.build_release_notes.outputs.changelog }}
-          tag_name: ${{ steps.create_tag_nam1e.outputs.name }}
-          make_latest: true
-
-
-      # Send slack message
+          tag-name: ${{ steps.create-tag-name.outputs.name }}
+      # close all jira tickets
+      # close Jira release
+      # send message release is a success
       # Send email
-
-# close all jira tickets
-# close Jira release
-# create release
-# send message release is a success
