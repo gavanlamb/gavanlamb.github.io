@@ -280,7 +280,7 @@ jobs:
         if: ${{ success() && steps.does_release_exist.outputs.release-exists == 'false' }}
         with:
           body: ${{ steps.build_release_notes.outputs.changelog }}
-          tag_name: ${{ steps.create_tag_nam1e.outputs.name }}
+          tag_name: ${{ steps.create_tag_name.outputs.name }}
           make_latest: true
 
 
