@@ -20,7 +20,7 @@ branches:
   main:
     regex: ^main$
     tag: ''
-    increment: Minor
+    increment: None
     mode: ContinuousDelivery
     prevent-increment-of-merged-branch-version: true
     track-merge-target: false
@@ -29,13 +29,13 @@ branches:
     is-mainline: true
     pre-release-weight: 55000
   hotfix:
-    regex: ^hotfix\/v\d+\.\d+\.\d+$
+    regex: ^hotfix.*$
     tag: ''
     source-branches:
       - main
     mode: ContinuousDelivery
     increment: Patch
-    prevent-increment-of-merged-branch-version: false
+    prevent-increment-of-merged-branch-version: true
     track-merge-target: false
     is-release-branch: false
     tracks-release-branches: false
@@ -59,8 +59,9 @@ branches:
     tag: beta
     source-branches:
       - main
-    mode: ContinuousDeployment
-    prevent-increment-of-merged-branch-version: false
+    mode: ContinuousDelivery
+    increment: Minor
+    prevent-increment-of-merged-branch-version: true
     track-merge-target: true
     tracks-release-branches: true
     is-release-branch: false
@@ -73,7 +74,8 @@ branches:
       - develop
       - feature
     mode: ContinuousDelivery
-    prevent-increment-of-merged-branch-version: false
+    increment: None
+    prevent-increment-of-merged-branch-version: true
     track-merge-target: false
     tracks-release-branches: false
     is-release-branch: false
@@ -82,8 +84,15 @@ branches:
   pull-request:
     regex: ^(pull|pull\-requests|pr)[/-]
     tag: pr
+    source-branches: 
+      - develop
+      - main
+      - release
+      - feature
+      - hotfix
     mode: ContinuousDelivery
-    prevent-increment-of-merged-branch-version: false
+    increment: None
+    prevent-increment-of-merged-branch-version: true
     tag-number-pattern: '[/-](?<number>\d+)[-/]'
     track-merge-target: false
     tracks-release-branches: false
