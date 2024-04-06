@@ -21,17 +21,16 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      - uses: gavanlamb/github-actions/.github/actions/version/create-release@main
-        name: Create release
-        id: create-release
-      - name: Open PR to merge main to ${{ steps.create-release.outputs.new-branch }}
-        id: prepare-release
+      - uses: gavanlamb/github-actions/.github/actions/release/create-release-branch@main
+        name: Create release branch
+        id: create-release-branch
+      - name: Open PR to merge main to ${{ steps.create-release-branch.outputs.release-branch-name }}
         shell: bash
         run: |
           gh pr create \
-            --base ${{ steps.create-release.outputs.new-branch }} \
+            --base ${{ steps.create-release-branch.outputs.release-branch-name }} \
             --head main \
-            --title "Merge main to ${{ steps.create-release.outputs.new-branch }}" \
-            --body "Merge main to ${{ steps.create-release.outputs.new-branch }}"
+            --title "Merge main to ${{ steps.create-release-branch.outputs.release-branch-name }}" \
+            --body "Merge main to ${{ steps.create-release-branch.outputs.release-branch-name }}"
         env:
           GH_TOKEN: ${{ github.token }}
