@@ -3,15 +3,18 @@ name: 'Release'
 run-name: ${{ github.ref_name }}
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - release*
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
+  pull-requests: write
 
 env:
-  artifactName: Website
+  artifact-name: Website
 
 concurrency:
   cancel-in-progress: false
@@ -22,61 +25,130 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.Version }}
+      version: ${{ steps.get-version.outputs.sem-ver }}
     steps:
       - uses: actions/checkout@v4
         name: Checkout
         with:
           fetch-depth: 0
           fetch-tags: true
-      - name: Generate version
-        uses: gavanlamb/github-actions/.github/actions/version/generate@main
-        id: version
+      - name: Get version
+        uses: gavanlamb/github-actions/.github/actions/version/get@main
+        id: get-version
       - name: Build site
         uses: gavanlamb/github-actions/.github/actions/hugo/build@main
         with:
-          artifactName: ${{ env.artifactName }}
-          destinationDirectory: site
-          sourceDirectory: docs
-          commitBy: ${{ github.actor }}
-          commitDate: ${{ steps.version.outputs.GitCommitDate }}
-          commitId: ${{ steps.version.outputs.GitCommitId }}
-          semanticVersion: ${{ steps.version.outputs.SemVer2 }}
-          version: ${{ steps.version.outputs.Version }}
+          artifact-name: ${{ env.artifact-name }}
+          commit-by: ${{ github.actor }}
+          commit-date: ${{ steps.get-version.outputs.commit-date }}
+          commit-id: ${{ steps.get-version.outputs.sha }}
+          destination-directory: site
+          source-directory: docs
+          semantic-version: ${{ steps.get-version.outputs.sem-ver }}
+          version: ${{ steps.get-version.outputs.full-sem-ver }}
       - name: Send message
         uses: gavanlamb/github-actions/.github/actions/slack/built@main
         if: always()
         with:
-          slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
-          version: ${{ steps.version.outputs.Version }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          version: ${{ steps.get-version.outputs.version }}
           status: ${{ job.status }}
-          includeIntegrationTests: 'false'
-          includeUnitTests: 'false'
+          include-integration-tests: 'false'
+          include-unit-tests: 'false'
+
+  Create-PRs:
+    name: Create PRs
+    runs-on: ubuntu-latest
+    needs: Build
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Open PR to merge ${{ github.ref_name }} to develop
+        id: open-pr-to-develop
+        shell: bash
+        run: |
+          gh pr create \
+            --base develop \
+            --head ${{ github.ref_name }} \
+            --title "Merge ${{ github.ref_name }} to develop" \
+            --body "Merge ${{ github.ref_name }} to develop"
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Open PR to merge ${{ github.ref_name }} to main
+        id: open-pr-to-main
+        shell: bash
+        run: |
+          gh pr create \
+            --base main \
+            --head ${{ github.ref_name }} \
+            --title "Merge ${{ github.ref_name }} to main" \
+            --body "Merge ${{ github.ref_name }} to main"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
   Production:
     name: Production
     runs-on: ubuntu-latest
-    needs: build
+    needs: 
+      - Build
+      - Create-PRs
     environment: 
       name: Production
       url: https://gavanlamb.com
     steps:
       - uses: actions/deploy-pages@v4
-        name: Deploy ${{ env.artifactName }} to GitHub Pages
+        name: Deploy ${{ env.artifact-name }} to GitHub Pages
         with:
-          artifact_name: ${{ env.artifactName }}
+          artifact_name: ${{ env.artifact-name }}
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Send message
         uses: gavanlamb/github-actions/.github/actions/slack/released@main
         if: always()
         with:
           environment: Production
-          includeSystemTests: 'false'
-          slackWebhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}
+          include-system-tests: 'false'
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
           status: ${{ job.status }}
           version: ${{ needs.build.outputs.version }}
 
-# close all jira tickets
-# close Jira release
-# create release
-# send message release is a success
+  Close:
+    name: Close
+    runs-on: ubuntu-latest
+    needs:
+      - Build
+      - Production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Create tag name
+        shell: bash
+        id: create-tag-name
+        run: |
+          NAME=v${{ needs.build.outputs.version }}
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+      - name: Merge ${{ github.ref_name }} into develop
+        uses: gavanlamb/github-actions/.github/actions/release/merge-release@main
+        with:
+          base-branch-name: develop
+      - name: Merge ${{ github.ref_name }} into main
+        uses: gavanlamb/github-actions/.github/actions/release/merge-release@main
+        with:
+          base-branch-name: main
+      - name: Create tag
+        uses: gavanlamb/github-actions/.github/actions/release/create-tag@main
+        with:
+          tag-name: ${{ steps.create-tag-name.outputs.name }}
+      - name: Create GitHub release
+        uses: gavanlamb/github-actions/.github/actions/release/create-notes@main
+        with:
+          tag-name: ${{ steps.create-tag-name.outputs.name }}
+      # close all jira tickets
+      # close Jira release
+      # send message release is a success
+      # Send email
