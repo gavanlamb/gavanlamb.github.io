@@ -1,4 +1,4 @@
-﻿name: 'Pull request: push'
+﻿name: 'Pull request: pushed'
 
 on:
   pull_request:
