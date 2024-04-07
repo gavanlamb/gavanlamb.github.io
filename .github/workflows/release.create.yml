@@ -24,13 +24,8 @@ jobs:
       - uses: gavanlamb/github-actions/.github/actions/release/create-release-branch@main
         name: Create release branch
         id: create-release-branch
-      - name: Open PR to merge main to ${{ steps.create-release-branch.outputs.release-branch-name }}
-        shell: bash
-        run: |
-          gh pr create \
-            --base ${{ steps.create-release-branch.outputs.release-branch-name }} \
-            --head main \
-            --title "Merge main to ${{ steps.create-release-branch.outputs.release-branch-name }}" \
-            --body "Merge main to ${{ steps.create-release-branch.outputs.release-branch-name }}"
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - uses: gavanlamb/github-actions/.github/actions/pull-request/create@main
+        name: Open PR to merge main to ${{ steps.create-release-branch.outputs.release-branch-name }}
+        with:
+            base-branch-name: ${{ steps.create-release-branch.outputs.release-branch-name }}
+            head-branch-name: main
