@@ -12,7 +12,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  create_branch:
+  create-branch:
     name: Create branch
     runs-on: ubuntu-latest
     steps:
