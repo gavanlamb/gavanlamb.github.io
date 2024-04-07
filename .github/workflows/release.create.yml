@@ -12,8 +12,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  create_release_branch:
-    name: Create release branch
+  create_branch:
+    name: Create branch
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,11 +21,27 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      - uses: gavanlamb/github-actions/.github/actions/release/create-release-branch@main
-        name: Create release branch
-        id: create-release-branch
-      - uses: gavanlamb/github-actions/.github/actions/pull-request/create@main
-        name: Open PR to merge main to ${{ steps.create-release-branch.outputs.release-branch-name }}
+      - name: Get type
+        id: get-type
+        shell: bash
+        run: |
+          if [ "${{ github.ref_name }}" == "develop" ]; then
+            echo "value=release" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" == "main" ]; then
+            echo "value=hotfix" >> $GITHUB_OUTPUT
+          else
+            echo "::error:: ${{ github.ref_name }} is not a supported branch to release from"
+            exit 1
+          fi
+      - uses: gavanlamb/github-actions/.github/actions/release/create-branch@main
+        name: Create ${{ steps.get-type.outputs.value }} branch
+        if: ${{ github.ref_name == 'develop' }}
+        id: create-branch
         with:
-            base-branch-name: ${{ steps.create-release-branch.outputs.release-branch-name }}
-            head-branch-name: main
+          branch-type: ${{ steps.get-type.outputs.value }}
+      - uses: gavanlamb/github-actions/.github/actions/pull-request/create@main
+        name: Open PR to merge main to ${{ steps.create-branch.outputs.branch-name }}
+        if: ${{ steps.get-type.outputs.value == 'release' }}
+        with:
+          base-branch-name: ${{ steps.create-branch.outputs.branch-name }}
+          head-branch-name: main

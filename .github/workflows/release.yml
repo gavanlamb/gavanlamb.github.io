@@ -64,28 +64,16 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      - name: Open PR to merge ${{ github.ref_name }} to develop
-        id: open-pr-to-develop
-        shell: bash
-        run: |
-          gh pr create \
-            --base develop \
-            --head ${{ github.ref_name }} \
-            --title "Merge ${{ github.ref_name }} to develop" \
-            --body "Merge ${{ github.ref_name }} to develop"
-        env:
-          GH_TOKEN: ${{ github.token }}
-      - name: Open PR to merge ${{ github.ref_name }} to main
-        id: open-pr-to-main
-        shell: bash
-        run: |
-          gh pr create \
-            --base main \
-            --head ${{ github.ref_name }} \
-            --title "Merge ${{ github.ref_name }} to main" \
-            --body "Merge ${{ github.ref_name }} to main"
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - uses: gavanlamb/github-actions/.github/actions/pull-request/create@main
+        name: Open PR to merge develop to ${{ github.ref_name }}
+        with:
+          base-branch-name: develop
+          head-branch-name: ${{ github.ref_name }}
+      - uses: gavanlamb/github-actions/.github/actions/pull-request/create@main
+        name: Open PR to merge main to ${{ github.ref_name }}
+        with:
+          base-branch-name: main
+          head-branch-name: ${{ github.ref_name }}
 
   Production:
     name: Production
@@ -143,7 +131,7 @@ jobs:
         with:
           tag-name: ${{ steps.create-tag-name.outputs.name }}
       - name: Create GitHub release
-        uses: gavanlamb/github-actions/.github/actions/release/create-notes@main
+        uses: gavanlamb/github-actions/.github/actions/release/create-release@main
         with:
           tag-name: ${{ steps.create-tag-name.outputs.name }}
       # close all jira tickets
