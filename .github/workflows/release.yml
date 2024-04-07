@@ -3,9 +3,7 @@ name: 'Release'
 run-name: ${{ github.ref_name }}
 
 on:
-  push:
-    branches:
-      - release*
+  workflow_dispatch:
 
 permissions:
   contents: write
