@@ -9,6 +9,8 @@ concurrency:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
   pull-requests: write
 
 jobs:
@@ -44,4 +46,4 @@ jobs:
         if: ${{ steps.get-type.outputs.value == 'release' }}
         with:
           base-branch-name: ${{ steps.create-branch.outputs.branch-name }}
-          head-branch-name: origin/main
+          head-branch-name: main
