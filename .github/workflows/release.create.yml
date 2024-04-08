@@ -44,4 +44,4 @@ jobs:
         if: ${{ steps.get-type.outputs.value == 'release' }}
         with:
           base-branch-name: ${{ steps.create-branch.outputs.branch-name }}
-          head-branch-name: main
+          head-branch-name: origin/main
