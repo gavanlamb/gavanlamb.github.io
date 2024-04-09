@@ -100,3 +100,4 @@ It will:
 
 Variable requirements:
 * `SLACK_WEBHOOK_URL`
+
