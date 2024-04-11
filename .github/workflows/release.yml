@@ -23,7 +23,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.get-version.outputs.sem-ver }}
+      sem-ver: ${{ steps.get-version.outputs.sem-ver }}
     steps:
       - uses: actions/checkout@v4
         name: Checkout
@@ -84,6 +84,17 @@ jobs:
       name: Production
       url: https://gavanlamb.com
     steps:
+      - uses: trstringer/manual-approval@v1
+        name: Approve deployment to production
+        with:
+          secret: ${{ secrets.GITHUB_TOKEN }}
+          approvers: ByteBlazer88,gavanlamb
+          minimum-approvals: 1
+          issue-title: "Deploying ${{ needs.build.outputs.sem-ver }} to production"
+          issue-body: "Please approve or deny the deployment of version ${{ needs.build.outputs.sem-ver }}"
+          exclude-workflow-initiator-as-approver: false
+          additional-approved-words: ''
+          additional-denied-words: ''
       - uses: actions/deploy-pages@v4
         name: Deploy ${{ env.artifact-name }} to GitHub Pages
         with:
@@ -97,7 +108,7 @@ jobs:
           include-system-tests: 'false'
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
           status: ${{ job.status }}
-          version: ${{ needs.build.outputs.version }}
+          version: ${{ needs.build.outputs.sem-ver }}
 
   close:
     name: Close
@@ -115,7 +126,7 @@ jobs:
         shell: bash
         id: create-tag-name
         run: |
-          NAME=v${{ needs.build.outputs.version }}
+          NAME=v${{ needs.build.outputs.sem-ver }}
           echo "name=$NAME" >> $GITHUB_OUTPUT
       - name: Merge ${{ github.ref_name }} into develop
         uses: gavanlamb/github-actions/.github/actions/release/merge-release@main
