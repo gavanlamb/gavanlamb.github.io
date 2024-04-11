@@ -42,14 +42,13 @@ jobs:
           commit-id: ${{ steps.get-version.outputs.sha }}
           destination-directory: site
           source-directory: docs
-          semantic-version: ${{ steps.get-version.outputs.sem-ver }}
-          version: ${{ steps.get-version.outputs.full-sem-ver }}
+          version: ${{ steps.get-version.outputs.sem-ver }}
       - name: Send message
         uses: gavanlamb/github-actions/.github/actions/slack/built@main
         if: always()
         with:
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          version: ${{ steps.get-version.outputs.version }}
+          version: ${{ steps.get-version.outputs.sem-ver }}
           status: ${{ job.status }}
           include-integration-tests: 'false'
           include-unit-tests: 'false'
