@@ -32,7 +32,7 @@ jobs:
           elif [ "${{ github.ref_name }}" == "main" ]; then
             echo "value=hotfix" >> $GITHUB_OUTPUT
           else
-            echo "::error:: ${{ github.ref_name }} is not a supported branch to release from"
+            echo "::error:: ${{ github.ref_name }} is not a supported branch to create a release from"
             exit 1
           fi
       - uses: gavanlamb/github-actions/.github/actions/release/create-branch@main
