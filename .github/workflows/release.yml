@@ -84,17 +84,6 @@ jobs:
       name: Production
       url: https://gavanlamb.com
     steps:
-      - uses: trstringer/manual-approval@v1
-        name: Approve deployment to production
-        with:
-          secret: ${{ secrets.GITHUB_TOKEN }}
-          approvers: ByteBlazer88,gavanlamb
-          minimum-approvals: 1
-          issue-title: "Deploying ${{ needs.build.outputs.sem-ver }} to production"
-          issue-body: "Please approve or deny the deployment of version ${{ needs.build.outputs.sem-ver }}"
-          exclude-workflow-initiator-as-approver: false
-          additional-approved-words: ''
-          additional-denied-words: ''
       - uses: actions/deploy-pages@v4
         name: Deploy ${{ env.artifact-name }} to GitHub Pages
         with:
