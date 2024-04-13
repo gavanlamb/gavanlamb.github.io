@@ -1,7 +1,5 @@
 name: 'Release'
 
-run-name: ${{ github.ref_name }}
-
 on:
   workflow_dispatch:
 
@@ -129,10 +127,17 @@ jobs:
         uses: gavanlamb/github-actions/.github/actions/release/create-tag@main
         with:
           tag-name: ${{ steps.create-tag-name.outputs.name }}
+      - uses: actions/download-artifact@v4
+        name: Download ${{ env.artifact-name }}
+        with:
+          name: ${{ env.artifact-name }}
+          path: site
       - name: Create GitHub release
         uses: gavanlamb/github-actions/.github/actions/release/create-release@main
         with:
           tag-name: ${{ steps.create-tag-name.outputs.name }}
+          files: |
+            site/artifact.tar
       # close all jira tickets
       # close Jira release
       # send message release is a success
