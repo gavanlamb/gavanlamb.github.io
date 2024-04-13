@@ -37,7 +37,6 @@ jobs:
           fi
       - uses: gavanlamb/github-actions/.github/actions/release/create-branch@main
         name: Create ${{ steps.get-type.outputs.value }} branch
-        if: ${{ github.ref_name == 'develop' }}
         id: create-branch
         with:
           branch-type: ${{ steps.get-type.outputs.value }}
