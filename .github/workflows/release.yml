@@ -132,12 +132,19 @@ jobs:
         with:
           name: ${{ env.artifact-name }}
           path: site
+      - name: Does tag exist
+        shell: bash
+        id: rename-website-artifact
+        run: |
+          NAME="website.tar"
+          mv site/artifact.tar $NAME
+          echo "path=$NAME" >> $GITHUB_OUTPUT
       - name: Create GitHub release
         uses: gavanlamb/github-actions/.github/actions/release/create-release@main
         with:
           tag-name: ${{ steps.create-tag-name.outputs.name }}
           files: |
-            site/artifact.tar
+            ${{ steps.rename-website-artifact.outputs.path }}
       # close all jira tickets
       # close Jira release
       # send message release is a success
