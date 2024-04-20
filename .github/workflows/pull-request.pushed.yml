@@ -42,7 +42,7 @@ jobs:
         uses: gavanlamb/github-actions/.github/actions/archive@main
         with:
           artifact-name: ${{ env.artifact-name }}
-          destination-directory: ${{ steps.build.outputs.destination-directory }}/../
+          destination-directory: ${{ steps.build.outputs.destination-directory }}/..
           source-directory: ${{ steps.build.outputs.destination-directory }}
       - name: Send message
         uses: gavanlamb/github-actions/.github/actions/slack/built@main
