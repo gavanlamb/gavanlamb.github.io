@@ -30,6 +30,7 @@ jobs:
         env:
           BUILD_NUMBER: ${{ github.run_id }}
       - name: Build site
+        id: build
         uses: gavanlamb/github-actions/.github/actions/hugo/build@main
         with:
           commit-by: ${{ github.actor }}

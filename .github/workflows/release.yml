@@ -32,6 +32,7 @@ jobs:
         uses: gavanlamb/github-actions/.github/actions/version/get@main
         id: get-version
       - name: Build site
+        id: build
         uses: gavanlamb/github-actions/.github/actions/hugo/build@main
         with:
           commit-by: ${{ github.actor }}
