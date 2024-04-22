@@ -30,15 +30,21 @@ jobs:
         env:
           BUILD_NUMBER: ${{ github.run_id }}
       - name: Build site
+        id: build
         uses: gavanlamb/github-actions/.github/actions/hugo/build@main
         with:
-          artifact-name: ${{ env.artifact-name }}
           commit-by: ${{ github.actor }}
           commit-date: ${{ steps.get-version.outputs.commit-date }}
           commit-id: ${{ steps.get-version.outputs.sha }}
           destination-directory: site
           source-directory: docs
           version: ${{ steps.get-version.outputs.sem-ver }}
+      - name: Archive site
+        uses: gavanlamb/github-actions/.github/actions/archive@main
+        with:
+          artifact-name: ${{ env.artifact-name }}
+          destination-directory: docs
+          source-directory: ${{ steps.build.outputs.destination-directory }}
       - name: Send message
         uses: gavanlamb/github-actions/.github/actions/slack/built@main
         if: always()
