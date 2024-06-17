@@ -20,25 +20,23 @@ GitHub secrets requirements:
 ### Pull request pushed
 [pull-request.pushed.yml](.github/workflows/pull-request.pushed.yml)  
 
-This workflow will run with every push to any branch that currently has an active pull request that doesn't target main, yes even the release branch.
+This workflow will run with every push to a branch that currently has an active pull request.
 
-This workflow exists because the pull request workflow is responsible for building and deploying the assets to a preview environment. This environment is used to preview the changes before merging the pull request. This workflow will deploy items to an ephemeral environment that will be destroyed once the pull request is closed. The environment name will be `preview{{PR_NUMBER}}` i.e. preview52.
+This workflow exists because the pull request workflow is responsible for building and deploying the assets to a preview environment for every push. This environment is used to preview the changes before merging the pull request to main. This workflow will deploy items to an ephemeral environment that will be destroyed once the pull request is closed. The environment name will be `preview{{PR_NUMBER}}` i.e. preview52.
 
 It will:
 1. build
    1. Checkout the code
-   2. Generate a version number - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/version/generate/action.yml) for more information
-   3. Build the Hugo site and create an artifact on the workflow run - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/hugo/build/action.yml) for more information
-   4. Send a slack message to the slack github channel - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/slack/built/action.yml) for more information
+   2. Install gitversion
+   3. Generate versiopn number
+   4. Build the Hugo site and create an artifact on the workflow run - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/hugo/build/action.yml) for more information
+   5. Archive the site - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/archive/action.yml) for more information
 2. Preview
    1. Deploy the site to a preview environment in and S3 bucket - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/hugo/deploy-to-s3/action.yml) for more information
-   2. Send a slack message to the slack github channel - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/slack/released/action.yml) for more information
 
 GitHub secrets requirements:
 * `AWS_ACCESS_KEY_ID`
 * `AWS_SECRET_ACCESS_KEY`
-* `JIRA_API_TOKEN`
-* `SLACK_WEBHOOK_URL`
 
 GitHub variable requirements:
 * `AWS_S3_CICD_BUCKET`
