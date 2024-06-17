@@ -4,32 +4,18 @@
 [🌎](https://gavanlamb.com/index.html)  
 
 ## workflows
-### Pull request raised
-[pull-request.opened.yml](.github/workflows/pull-request.opened.yml)  
+### Notify when pull request has been opened or reopened
+[notify-pull-request-opened.yml](.github/workflows/notify-pull-request-opened.yml)  
 
-This workflow will run on every `opened` and `reopened` pull requests.
+This workflow will run on every `opened` and `reopened` pull request.
 
-This workflow exists because reviewing pull requests adds an overhead to the review process because information is not readily available. This workflow aims to provide the reviewer with the necessary information to make an informed decision as well as help the developer automate work that is repetitive and time consuming.
+This workflow exists  
 
 It will:
-1. Try and get the Jira issue details from the branch name - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/jira/get-issue-details/action.yml) for more information
-2. Update the Jira issue status to `Review` if the task is of type `subtask` - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/jira/change-issue-status/action.yml) for more information
-3. Update the pull request title and the description with the following variables: - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/pull-request/update-pr/action.yml) for more information
-   
-   | Variable               | Description                                                                                                                                                                                                                                        |
-   |------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-   | `{{ISSUE_IDENTIFIER}}` | The Jira issue identifier. This value is retrieved from the `issueIdentifier` input parameter.                                                                                                                                                     |
-   | `{{ISSUE_TITLE}}`      | The Jira issue title. This value is retrieved from the `issueTitle` input parameter.                                                                                                                                                               |
-   | `{{ISSUE_URL}}`        | The Jira issue url. This value is retrieved from the `issueUrl` input parameter.                                                                                                                                                                   |
-   | `{{REPOSITORY_NAME}}`  | Name of the github repository. This value is retrieved from the context property `${{ github.repository }}`.                                                                                                                                       |
-   | `{{ENVIRONMENT}}`      | Name of the preview environment the site is deployed to. This value is retrieved from the `environment` input parameter. Each pull request has a unique environment. The environment name has a template of `preview{{PR_NUMBER}}` i.e. preview52. |
-   | `{{BRANCH_NAME}}`      | Name of the branch the PR has been raised for. This value is retrieved from the context property `${{ github.head_ref }}`.                                                                                                                         |
-
-4. Send a slack message to the slack github channel - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/slack/pull-request-created/action.yml) for more information
+1. Send a message to a Google Chat Space with details of the PR
 
 GitHub secrets requirements:
-* `JIRA_API_TOKEN`
-* `SLACK_WEBHOOK_URL`
+* `GOOGLE_CHAT_WEBHOOK_URL`
 
 ### Pull request pushed
 [pull-request.pushed.yml](.github/workflows/pull-request.pushed.yml)  
