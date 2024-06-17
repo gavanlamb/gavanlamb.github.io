@@ -8,6 +8,4 @@
 *
 
 ## Testing
-- [ ] Tested changes in sample application
-- [ ] Add unit tests and maintained a branch coverage of 100%
-- [ ] Addressed mutation testing results
+- [ ] Deployed to S3
