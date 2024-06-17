@@ -44,24 +44,21 @@ GitHub variable requirements:
 * `AWS_S3_CICD_BUCKET`
 * `AWS_DEFAULT_REGION`
 
-### Pull request closed
-[pull-request.closed.yml](.github/workflows/pull-request.closed.yml)  
+### Remove environment when pull request is closed
+[remove-environment.yml](.github/workflows/remove-environment.yml)  
 
-This workflow will run on every `closed` pull requests.
+This workflow will run on every `closed` pull request.
 
-This workflow exists because the pull request workflow is responsible for cleaning up the preview environment that was created when the pull request was raised. This workflow will destroy the ephemeral environment that was created when the pull request was raised. The environment name will be `preview{{PR_NUMBER}}` i.e. preview52.
+This workflow exists because the pull request workflow is responsible for cleaning up the preview environment that was created when the pull request was raised. The environment name will be `preview{{PR_NUMBER}}` i.e. preview52.
 
 It will:
-1. Try and get the Jira issue details from the branch name - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/jira/get-issue-details/action.yml) for more information
-2. Update the Jira issue status to `Done` if the task is of type `subtask` - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/jira/change-issue-status/action.yml) for more information
-3. Remove the site from the S3 bucket
-4. Delete GitHub environment created for the pull request
+1. Remove the site from the S3 bucket
+2. Delete GitHub environment created for the pull request
 
 GitHub secrets requirements:
 * `AWS_ACCESS_KEY_ID`
 * `AWS_SECRET_ACCESS_KEY`
-* `JIRA_API_TOKEN`
-* `SLACK_WEBHOOK_URL`
+* `PAT_GITHUB_ACTIONS`
 
 GitHub variable requirements:
 * `AWS_S3_CICD_BUCKET`
