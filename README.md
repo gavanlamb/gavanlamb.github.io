@@ -62,42 +62,17 @@ GitHub variable requirements:
 * `AWS_S3_CICD_BUCKET`
 * `AWS_DEFAULT_REGION`
 
-### Release create
-[release.create.yml](.github/workflows/release.create.yml)
-
-This workflow is manually triggered and is responsible for creating a release or hotfix branch. If the source branch is develop it will create a release branch, if the branch is main then it will create a hotfix branch.
-
-It will:
-1. Checkout the code
-2. Create the branch name
-3. Create the branch if it doesn't exist
-4. If the created branch is `release` then it will create a pull request from the main branch to the `release` branch
-
 ### Release
 [release.yml](.github/workflows/release.yml)
 
-This workflow is manually triggered and is responsible for building and release the code in the specified branch. This workflow will deploy the assets to the production environment. It should only be executed on `release/vx.x` branches.
+This workflow is manually triggered and is responsible for building and releasing the code when changes are pushed to main.
 
 It will:
 1. build
    1. Checkout the code
-   2. Generate a version number - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/version/generate/action.yml) for more information
-   3. Build the Hugo site and create an artifact on the workflow run - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/hugo/build/action.yml) for more information
-   4. Send a slack message to the slack github channel - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/slack/built/action.yml) for more information
-2. Create PRs
-   1. Checkout the code
-   2. Create a pull request from the `release` branch to the `develop` branch
-   3. Create a pull request from the `release` branch to the `main` branch
-3. Production
-   1. Approve deployment to production 
-   2. Pull the website artifact and deploy the site to the production environment in and S3 bucket
-   3. Send a slack message to the slack github channel - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/slack/released/action.yml) for more information
-4. Close the release
-   1. Checkout the code
-   2. Create a tag for the release
-   3. Merge the pull request from the `release` branch to the `develop` branch
-   4. Merge the pull request from the `release` branch to the `main` branch
-   5. Create a GitHub release
-
-GitHub secrets requirements:
-* `SLACK_WEBHOOK_URL`
+   2. Install gitversion
+   3. Generate versiopn number
+   4. Build the Hugo site and create an artifact on the workflow run - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/hugo/build/action.yml) for more information
+   5. Archive the site - please see [action.yml](https://github.com/gavanlamb/github-actions/blob/main/.github/actions/archive/action.yml) for more information
+2. Production
+   1. Pull the website artifact and deploy the site to the production environment in and S3 bucket
