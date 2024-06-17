@@ -20,6 +20,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    outputs:
+      sem-ver: ${{ steps.get-version.outputs.semVer }}
     steps:
       - uses: actions/checkout@v4
         name: Checkout
@@ -65,7 +67,35 @@ jobs:
     environment: 
       name: Production
       url: https://gavanlamb.com
+    env:
+      tag: v${{ needs.build.outputs.sem-ver }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Create and push tag
+        run: |
+          git config user.name '${{ github.actor }}'
+          git config user.email '${{ github.actor }}@users.noreply.github.com'
+          git remote set-url origin https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}
+          git tag -a ${{ env.tag }} -m "${{ env.tag }}}"
+          git push origin tag ${{ env.tag }}
+      - name: Generate changelog
+        id: changelog
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ env.tag }}
+          writeToFile: false
+          includeInvalidCommits: true
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: "${{ steps.changelog.outputs.changes }}"
+          tag_name: ${{ env.tag }}
+          make_latest: true
       - uses: actions/deploy-pages@v4
         name: Deploy ${{ env.artifact-name }} to GitHub Pages
         with:
