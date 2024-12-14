@@ -9,4 +9,4 @@ path = "github.com/CaiJimmy/hugo-theme-stack/v3"
 # Mount the local ./assets folder so Hugo includes all its contents
 [[module.mounts]]
 source = "assets"
-target = "assets"
+target = "img"
