@@ -52,6 +52,15 @@ There are three primary methods to install Longhorn:
 This is the simplest method for most users.
 
 1. **Install Longhorn**:
+
+Download and verify the installation manifest:
+```bash
+curl -sSfL https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/longhorn.yaml -o longhorn.yaml
+# Review the manifest before applying
+kubectl apply -f longhorn.yaml
+```
+
+Or install directly (use with caution in production):
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/longhorn.yaml
 ```
@@ -91,10 +100,18 @@ Create a `values.yaml` file with your custom configuration:
 ```yaml
 defaultSettings:
   backupTarget: s3://backups@us-east-1/
-  backupTargetCredentialSecret: aws-secret
+  backupTargetCredentialSecret: aws-secret  # Create this secret first with your credentials
 persistence:
   defaultClass: true
   defaultClassReplicaCount: 3
+```
+
+**Important**: Before configuring backup targets, create a Kubernetes secret with your cloud provider credentials:
+```bash
+kubectl create secret generic aws-secret \
+  --from-literal=AWS_ACCESS_KEY_ID=your-access-key \
+  --from-literal=AWS_SECRET_ACCESS_KEY=your-secret-key \
+  -n longhorn-system
 ```
 
 Then install with:
@@ -230,18 +247,22 @@ kubectl -n longhorn-system edit settings.longhorn.io backup-target
 
 ## Upgrading Longhorn
 
-To upgrade Longhorn to a newer version:
+To upgrade Longhorn to a newer version (check [releases](https://github.com/longhorn/longhorn/releases) for available versions):
 
 **Using kubectl**:
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v<NEW_VERSION>/deploy/longhorn.yaml
+# Example: upgrading to v1.6.0
+kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.6.0/deploy/longhorn.yaml
 ```
 
 **Using Helm**:
 ```bash
 helm repo update
-helm upgrade longhorn longhorn/longhorn --namespace longhorn-system --version <NEW_VERSION>
+# Example: upgrading to version 1.6.0
+helm upgrade longhorn longhorn/longhorn --namespace longhorn-system --version 1.6.0
 ```
+
+**Note**: Always review the [upgrade notes](https://longhorn.io/docs/latest/deploy/upgrade/) before upgrading to ensure compatibility.
 
 ## Uninstalling Longhorn
 
@@ -275,7 +296,7 @@ sudo systemctl status iscsid
 ```
 
 ### Performance issues
-Review the Longhorn documentation on [performance tuning](https://longhorn.io/docs/latest/best-practices/).
+Review the Longhorn documentation on [best practices and performance tuning](https://longhorn.io/docs/latest/best-practices/).
 
 ## Additional Resources
 
