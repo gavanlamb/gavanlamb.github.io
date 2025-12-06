@@ -398,3 +398,4 @@ FodyWeavers.xsd
 /docs/public/
 /docs/resources/
 /.idea/
+/docs/assets/jsconfig.json
